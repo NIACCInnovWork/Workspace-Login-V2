@@ -16,7 +16,7 @@ def open_new_user(root, date):  # Function to open new user window
         new_user_window.update()
 
     # Create objects
-    new_user_window_title_label = Label(new_user_window, text="Enter the information below to create a new user",
+    new_user_window_title_label = Label(new_user_window, text="Create User",
                                         font=("Arial", 14), pady=10)
     name_entry_label = Label(new_user_window, text="Full Name:", pady=5)
     name_entry = Entry(new_user_window, width=30)
