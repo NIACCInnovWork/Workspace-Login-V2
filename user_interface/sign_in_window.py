@@ -1,12 +1,18 @@
-# Sign In Window File
-
-# This file defines the window layout and behavior for signing in to
-# the NIACC Innovation Workspace for existing users of the space
-
+"""
+NIACC Innovation Workspace Login V2
+File that defines the layout and behavior of the Sign In window.
+Author: Anthony Riesen
+"""
 from tkinter import *
 
 
 def open_sign_in(root, date):
+    """
+    Function to create Sign In window upon button click
+    :param root: Primary TK Object (main_window)
+    :param date: Not currently being used @todo remove
+    :return: none
+    """
     sign_in_window = Toplevel(root)
     # sign_in_window.geometry("750x300")
     sign_in_window.title("Sign In Window")

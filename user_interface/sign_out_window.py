@@ -2,11 +2,21 @@
 
 # This file defines the window layout and behavior for signing out of
 # the NIACC Innovation Workspace for logged-in users of the space
-
+"""
+NIACC Innovation Workspace Login V2
+File that defines the layout and behavior of the Sign Out window.
+Author: Anthony Riesen
+"""
 from tkinter import *
 
 
 def open_sign_out(root, date):  # Function to open sign out window
+    """
+    Function to create Sign Out window upon button click
+    :param root: Primary TK Object (main_window)
+    :param date: Not currently being used @todo remove
+    :return: none
+    """
     sign_out_window = Toplevel(root)
     # sign_out_window.geometry("750x250")
     sign_out_window.title("Sign Out Window")

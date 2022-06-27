@@ -1,9 +1,18 @@
+"""
+NIACC Innovation Workspace Login V2
+This file initializes the workspace database and data structure.
+Author: Anthony Riesen
+"""
+
 import mysql.connector
 from config import database_password
 
 
-# Create the Initial Database
 def create_workspace_database():
+    """
+    Connects to MySQL and creates a new database if one doesn't already exist.
+    :return: none.
+    """
     mydb = mysql.connector.connect(
         host="localhost",  # Location of Database
         user="root",  # Database User
@@ -15,6 +24,10 @@ def create_workspace_database():
 
 # Connect to Existing Database
 def start_workspace_database():
+    """
+    Establishes connection to the workspace login database
+    :return: database object
+    """
     mydb = mysql.connector.connect(
         host="localhost",  # Location of Database
         user="root",  # Database User
@@ -24,13 +37,18 @@ def start_workspace_database():
     return mydb
 
 
-def create_users_table(database):
+def create_users_table(database: mysql.connector):
+    """
+    Creates the 'users' table in the database if it does not already exist.
+    :param database: database in which to add the table
+    :return: none
+    """
     my_cursor = database.cursor()
     my_cursor.execute("CREATE TABLE IF NOT EXISTS users ("
                       "user_id INTEGER AUTO_INCREMENT PRIMARY KEY, "
                       "date_joined TIMESTAMP, "
                       "name VARCHAR(255) UNIQUE, "
-                      "user_type ENUM('Student', 'Staff', 'Entrepreneur', 'Business Member', 'Community Member')"
+                      "user_type ENUM('Student', 'Staff', 'Entrepreneur', 'Business_Member', 'Community_Member')"
                       ")")
 
 
