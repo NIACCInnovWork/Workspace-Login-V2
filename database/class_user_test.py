@@ -21,7 +21,6 @@ class TestUserClass(unittest.TestCase):
         database = start_workspace_database()
         name = "Anthony Riesen" + " " + str(randint(0, 10000))
         user = User.create(database, name, UserType.Staff.value)
-        # print("something")
 
         self.assertIsNotNone(user.user_id)
         self.assertIsNotNone(user.date_joined)

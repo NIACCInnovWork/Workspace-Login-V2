@@ -8,6 +8,7 @@ import tkinter.messagebox
 
 from database.class_user import User
 from database.class_user import UserType
+from database.class_visit import Visit
 from database.initialize_database import start_workspace_database
 
 
@@ -26,6 +27,9 @@ def create_user_from_ui(name: str, user_type: str):
         user = User.load(database, name)
     except TypeError:
         user = User.create(database, name, UserType[user_type])
+        visit = Visit.create(database, user.user_id)
+        tkinter.messagebox.showinfo("Member Created!",
+                                    "Your new member has been created and you've been logged in for your first visit!")
     else:
         print("This member already exists.")
         tkinter.messagebox.showwarning("Member Already Exists!",

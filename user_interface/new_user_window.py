@@ -45,6 +45,7 @@ def open_new_user(root, date):  # Function to open new user window
             user_type = ''  # This should indicate an error of some kind has occurred.
 
         create_user_from_ui(name, user_type)
+        exit_button()
 
     # Create objects
     new_user_window_title_label = Label(new_user_window, text="Create User",

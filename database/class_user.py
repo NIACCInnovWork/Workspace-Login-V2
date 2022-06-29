@@ -42,7 +42,7 @@ class User:
         Overrides the Print() functionality for the user to more cleanly output the object to the terminal
         :return: printout to terminal
         """
-        return f"User userID: {self.user_id}, name: {self.name}, " \
+        return f"User: userID: {self.user_id}, name: {self.name}, " \
                f"timeStamp: {self.date_joined}, userType: {self.user_type}"
 
     @staticmethod

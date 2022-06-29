@@ -52,13 +52,20 @@ def create_users_table(database: mysql.connector):
                       ")")
 
 
-# def create_visits_table(database):
-#     my_cursor = database.cursor()
-#     my_cursor.execute("CREATE TABLE visits (visit_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
-#                       "user_id INTEGER FOREIGN KEY, "
-#                       "arrival_datetime DATETIME, "
-#                       "departure_datetime DATETIME)")
-#     my_cursor.execute()
+def create_visits_table(database):
+    """
+    Create the 'visits' table in the database if it does not already exist.
+    :param database: Database in which to add the table
+    :return: none
+    """
+    my_cursor = database.cursor()
+    my_cursor.execute("CREATE TABLE IF NOT EXISTS visits ("
+                      "visit_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
+                      "user_id INTEGER, FOREIGN KEY(user_id) REFERENCES Users(user_id), "
+                      "start_time DATETIME, "
+                      "end_time DATETIME"
+                      ")")
+
 
 
 # def create_projects_table(database):
