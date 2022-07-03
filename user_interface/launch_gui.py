@@ -4,53 +4,64 @@ File that defines the
 Author: Anthony Riesen
 """
 
-import tkinter.messagebox
 from tkinter import *
+# from PIL import Image, ImageTK
 import datetime as dt
-
-# Import of additional files
 from user_interface.sign_in_window import *
 from user_interface.new_user_window import *
 from user_interface.sign_out_window import *
+from database.class_visit import Visit
+from database.initialize_database import *
 
 
-def launch_gui():
-    """
-    Function that starts the main application user interface.
-    :return: none
-    """
-    # Format the main window
-    main_window = Tk()  # Must come first because it defines the window
-    main_window.title('Innovation Workspace Login')  # Create title of the window
+class MainPage(tk.Frame):
 
-    # def disable_close():
-    #     tkinter.messagebox.showinfo("Close Disabled", "The regular exit feature has been disabled to prevent the "
-    #                                                   "application from closing prematurely. \n \n "
-    #                                                   "Thank you, "
-    #                                                   "\n Workspace Staff")
-    #
-    # root.protocol("WM_DELETE_WINDOW", disable_close)
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
 
-    workspace_logo = PhotoImage(file='resources/Innovation Workspace Logo-Official-Scaled.png')  # Import Logo
-    logo_label = Label(main_window, image=workspace_logo)  # Place Logo into a Label
+        date = dt.datetime.now()
 
-    # Implement Datetime
-    date = dt.datetime.now()
+        # Create Logged In Frame #####################################################################
+        logged_in_frame = tk.LabelFrame(self, text="Logged In")
 
-    # Creating buttons for the main page
-    sign_in_button = Button(main_window, text="Sign In", font=("Arial", 14),
-                            height=3, width=10, command=lambda: open_sign_in(main_window, date))
-    new_user_button = Button(main_window, text="New User", font=("Arial", 14),
-                             height=3, width=10, command=lambda: open_new_user(main_window, date))
-    sign_out_button = Button(main_window, text="Sign Out", font=("Arial", 14),
-                             height=3, width=10, command=lambda: open_sign_out(main_window, date))
+        # Pull Data
+        database = start_workspace_database()
+        users_logged_in = Visit.get_logged_in_users(database)
 
-    # Placing Objects on Screen
-    logo_label.grid(row=0, column=0, columnspan=3)
-    sign_in_button.grid(row=1, column=0, pady=10)
-    new_user_button.grid(row=1, column=1, pady=10)
-    sign_out_button.grid(row=1, column=2, pady=10)
+        # Create listbox & scrollbar
+        scrollbar = tk.Scrollbar(logged_in_frame, orient="vertical")
+        logged_in_listbox = tk.Listbox(logged_in_frame, yscrollcommand=scrollbar.set, height=15)
 
-    main_window.mainloop()  # Creating an event loop
+        # Populate listbox
+        for name in users_logged_in:
+            logged_in_listbox.insert(users_logged_in.index(name), name[0])
 
+        # Configure & pack listbox/scrollbar
+        scrollbar.config(command=logged_in_listbox.yview)
+        scrollbar.pack(side="right", fill=Y)
+        logged_in_listbox.pack(side="left", fill="both", expand=1)
+        logged_in_frame.grid(row=0, column=0, rowspan=2, padx=10, pady=10)
 
+        # Create Logo Frame #####################################################################
+        logo_frame = LabelFrame(self, text="Workspace Logo")
+        photo = PhotoImage(file='resources/Innovation Workspace Logo-Official-Scaled.png')  # Import Logo
+        logo_label = Label(logo_frame, image=photo)  # Place Logo into a Label
+        logo_label.photo = photo
+        logo_label.pack()
+        logo_frame.grid(row=0, column=1, padx=10, pady=10)
+
+        # Create Menu Frame #####################################################################
+        menu_frame = LabelFrame(self, text="Menu Options")
+        sign_in_button = Button(menu_frame, text="Sign In", font=("Arial", 14),
+                                height=3, width=10, command=lambda: controller.show_frame("SignInPage"))
+        new_user_button = Button(menu_frame, text="New User", font=("Arial", 14),
+                                 height=3, width=10, command=lambda: controller.show_frame("NewUserPage"))
+        sign_out_button = Button(menu_frame, text="Sign Out", font=("Arial", 14),
+                                 height=3, width=10, command=lambda: controller.show_frame("SignOutPage"))
+        sign_in_button.grid(row=0, column=0, padx=10, pady=10)
+        new_user_button.grid(row=0, column=1, padx=10, pady=10)
+        sign_out_button.grid(row=0, column=2, padx=10, pady=10)
+        menu_frame.grid(row=1, column=1, padx=10, pady=10)
+
+        self.grid(row=1, column=0, rowspan=4, columnspan=2, sticky=N+S+E+W)

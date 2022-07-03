@@ -7,6 +7,8 @@ import datetime
 
 import mysql.connector
 
+from database.class_user import User
+
 
 class Visit:
     """
@@ -75,3 +77,29 @@ class Visit:
 
         print(visit)
         return visit
+
+    @staticmethod
+    def get_logged_in_users(database: mysql.connector):
+        """
+        Class that queries the database for users which are currently logged in.
+        :param database: Workspace Login Database from which the visits and users are loaded
+        :return: List of names of the members who have a visit with no logout timestamp
+        """
+        my_cursor = database.cursor()
+        sql_logged_in_users_command = "SELECT users.name FROM users JOIN visits ON users.user_id = visits.user_id " \
+                                      "WHERE visits.end_time IS NULL"
+        my_cursor.execute(sql_logged_in_users_command)
+        logged_in_users = my_cursor.fetchall()
+
+        return logged_in_users
+
+    @staticmethod
+    def check_logged_in(database: mysql.connector, user_id: int):
+        my_cursor = database.cursor()
+        sql_logged_in_command = "SELECT * FROM visits WHERE user_id = %s AND end_time IS NULL"
+        my_cursor.execute(sql_logged_in_command, (user_id,))
+        record = my_cursor.fetchone()
+        visit = Visit(record[0], record[1], record[2], record[3])
+
+        return visit
+

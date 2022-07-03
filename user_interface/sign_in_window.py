@@ -3,72 +3,121 @@ NIACC Innovation Workspace Login V2
 File that defines the layout and behavior of the Sign In window.
 Author: Anthony Riesen
 """
-from tkinter import *
+import tkinter as tk
+import datetime as dt
+from PIL import Image, ImageTk
+from database.class_user import User
+from database.initialize_database import start_workspace_database
+from controller.sign_in_controller import create_visit_from_ui
 
 
-def open_sign_in(root, date):
-    """
-    Function to create Sign In window upon button click
-    :param root: Primary TK Object (main_window)
-    :param date: Not currently being used @todo remove
-    :return: none
-    """
-    sign_in_window = Toplevel(root)
-    # sign_in_window.geometry("750x300")
-    sign_in_window.title("Sign In Window")
+class SignInPage(tk.Frame):
 
-    # Functions
-    def exit_button():
-        sign_in_window.destroy()
-        sign_in_window.update()
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
 
-    # Crete Objects
-    sign_in_window_title_label = Label(sign_in_window, text="User Sign In", font=("Arial", 14), pady=5)
-    users_list_box = Listbox(sign_in_window, width=30, height=15)
+        # date = dt.datetime.now()
 
-    user_name_label = Label(sign_in_window, text="User Name:", padx=5)
-    user_name_entry = Entry(sign_in_window, width=30, state="disabled")
+        # Create Users Listbox Frame ##############################################################
+        users_frame = tk.LabelFrame(self, text="All Users")
 
-    visit_date_label = Label(sign_in_window, text="Visit DateTime:", padx=5)
-    visit_date_entry = Entry(sign_in_window, width=30)
-    visit_date_entry.insert(END, date)
-    visit_date_entry.config(state="disabled")
+        # Pull Data
+        database = start_workspace_database()
+        user_list = User.get_all_visitors(database)
 
-    visitor_type_label = Label(sign_in_window, text="Visitor Type:", padx=5)
-    visitor_type_entry = Entry(sign_in_window, width=30, state="disabled")
+        # Create listbox & scrollbar
+        user_scrollbar = tk.Scrollbar(users_frame, orient="vertical")
+        users_list_box = tk.Listbox(users_frame, yscrollcommand=user_scrollbar.set, height=15)
 
-    purpose_label = Label(sign_in_window, text="Visit Purpose:", padx=5, justify="left")
-    purpose_prototyping_checkbox = Checkbutton(sign_in_window, text="Prototyping", justify="left")
-    purpose_class_project_checkbox = Checkbutton(sign_in_window, text="Class Project", justify="left")
-    purpose_personal_project_checkbox = Checkbutton(sign_in_window, text="Personal Project", justify="left")
-    purpose_community_build_checkbox = Checkbutton(sign_in_window, text="Community Build", justify="left")
-    purpose_hanging_out_checkbox = Checkbutton(sign_in_window, text="Hanging Out", justify="left")
-    purpose_work_study_checkbox = Checkbutton(sign_in_window, text="Work Study", justify="left")
+        # Populate listbox
+        for name in user_list:
+            users_list_box.insert(user_list.index(name), name[0])
 
-    submit_sign_in_button = Button(sign_in_window, text="Sign In", width=10)
-    cancel_sign_in_button = Button(sign_in_window, text="Cancel", width=10, command=exit_button)
+        # Configure & pack listbox/scrollbar
+        user_scrollbar.config(command=users_list_box.yview)
+        user_scrollbar.pack(side="right", fill=tk.Y)
+        users_list_box.pack(side="left", fill="both", expand=1)
 
-    # Place Objects
-    sign_in_window_title_label.grid(row=0, column=0)
-    users_list_box.grid(row=1, column=0, rowspan=8, padx=(10, 10))
+        users_frame.grid(row=0, column=0, rowspan=2, padx=10, pady=10)
 
-    user_name_label.grid(row=1, column=1, sticky=E)
-    user_name_entry.grid(row=1, column=2, padx=(5, 20))
+        # Create Header Frame ##############################################################
+        header_frame = tk.LabelFrame(self, text="header")
 
-    visit_date_label.grid(row=2, column=1, sticky=E)
-    visit_date_entry.grid(row=2, column=2, padx=(5, 20))
+        page_title = tk.Label(header_frame, text="Sign In", font=controller.title_font)
 
-    visitor_type_label.grid(row=3, column=1, sticky=E)
-    visitor_type_entry.grid(row=3, column=2, padx=(5, 20))
+        # Resize and place logo
+        base_width = 300
+        photo = (Image.open(r"resources/Innovation Workspace Logo-Official-Scaled.png"))
+        width_percent = (base_width/float(photo.size[0]))
+        height_size = int((float(photo.size[1])*float(width_percent)))
+        resized_photo = photo.resize((base_width, height_size), Image.ANTIALIAS)
+        new_photo = ImageTk.PhotoImage(resized_photo)
+        header_frame.photo = new_photo
+        canvas = tk.Canvas(header_frame, width=base_width, height=height_size)
+        canvas.create_image(10, 10, anchor=tk.NW, image=header_frame.photo)
+        canvas.pack()
+        page_title.pack()
 
-    purpose_label.grid(row=4, column=1, sticky=W)
-    purpose_prototyping_checkbox.grid(row=4, column=2, sticky=W, padx=(15, 10))
-    purpose_class_project_checkbox.grid(row=5, column=2, sticky=W, padx=(15, 10))
-    purpose_personal_project_checkbox.grid(row=6, column=2, sticky=W, padx=(15, 10))
-    purpose_community_build_checkbox.grid(row=7, column=2, sticky=W, padx=(15, 10))
-    purpose_hanging_out_checkbox.grid(row=8, column=2, sticky=W, padx=(15, 10))
-    purpose_work_study_checkbox.grid(row=9, column=2, sticky=W, padx=(15, 10))
+        header_frame.grid(row=0, column=1, columnspan=2)
 
-    submit_sign_in_button.grid(row=8, column=3, padx=10)
-    cancel_sign_in_button.grid(row=9, column=3, padx=10, pady=(0, 10))
+        # Create User Info Frame ############################################################
+        user_info_frame = tk.LabelFrame(self, text="info")
 
+        user_name_label = tk.Label(user_info_frame, text="User Name:", padx=5)
+        user_name_entry_label = tk.Label(user_info_frame, width=30, relief="sunken")
+
+        visit_date_label = tk.Label(user_info_frame, text="Visit DateTime:", padx=5)
+        visit_date_entry_label = tk.Label(user_info_frame, width=30, relief="sunken")
+
+        user_type_label = tk.Label(user_info_frame, text="Visitor Type:", padx=5)
+        user_type_entry_label = tk.Label(user_info_frame, width=30, relief="sunken")
+
+        user_name_label.grid(row=1, column=1, sticky="E")
+        user_name_entry_label.grid(row=1, column=2, padx=(5, 20))
+
+        visit_date_label.grid(row=2, column=1, sticky="E")
+        visit_date_entry_label.grid(row=2, column=2, padx=(5, 20))
+
+        user_type_label.grid(row=3, column=1, sticky="E")
+        user_type_entry_label.grid(row=3, column=2, padx=(5, 20))
+
+        user_info_frame.grid(row=1, column=1)
+
+        # Create Function to update user info based on selection ##########
+        def callback(event):
+            selection = event.widget.curselection()
+            if selection:
+                index = selection[0]
+                selected_name = event.widget.get(index)
+                user = User.load(database, selected_name)
+                user_name_entry_label.configure(text=user.name)
+                user_type_entry_label.configure(text=user.user_type)
+                visit_date_entry_label.configure(text=str(dt.datetime.now()))
+            else:
+                user_name_label.configure(text="")
+
+        users_list_box.bind("<<ListboxSelect>>", callback)
+
+        # Create function for start visit label
+        def sign_in_button():
+            selected_name = users_list_box.get(users_list_box.curselection())
+            user = User.load(database, selected_name)
+            print(user.user_id)
+            visit = create_visit_from_ui(user.user_id)
+            controller.show_frame("MainPage")
+
+        # Create Button Frame #############################################
+        button_frame = tk.LabelFrame(self, text="buttons")
+
+        submit_sign_in_button = tk.Button(button_frame, text="Sign In", width=10,
+                                          command=sign_in_button)
+        cancel_sign_in_button = tk.Button(button_frame, text="Cancel", width=10,
+                                          command=lambda: controller.show_frame("MainPage"))
+
+        submit_sign_in_button.grid(row=8, column=3, padx=10)
+        cancel_sign_in_button.grid(row=9, column=3, padx=10, pady=(0, 10))
+
+        button_frame.grid(row=1, column=2)
+
+        self.grid(row=1, column=0, rowspan=4, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)

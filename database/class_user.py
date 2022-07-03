@@ -81,6 +81,13 @@ class User:
 
         user = User(record[0], record[1], record[2], UserType[record[3]])
 
-        print(user)
+        # print(user)
         return user
+
+    @staticmethod
+    def get_all_visitors(database: mysql.connector):
+        my_cursor = database.cursor()
+        sql_load_names_command = "SELECT name FROM users"
+        my_cursor.execute(sql_load_names_command)
+        return my_cursor.fetchall()
 
