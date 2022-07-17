@@ -67,20 +67,33 @@ def create_visits_table(database):
                       ")")
 
 
+def create_projects_table(database):
+    """
+    Create the 'projects' table in the database if it does not already exist.
+    :param database: Database in which to add the table
+    :return: none
+    """
+    my_cursor = database.cursor()
+    my_cursor.execute("CREATE TABLE IF NOT EXISTS projects ("
+                      "project_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
+                      "project_name VARCHAR(255) UNIQUE,"
+                      "project_description VARCHAR(510),"
+                      "project_type ENUM('Personal', 'Class', 'Entrepreneurial', 'Business')"
+                      ")")
 
-# def create_projects_table(database):
-#     my_cursor = database.cursor()
-#     my_cursor.execute("CREATE TABLE projects (project_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
-#                       "visit_id INTEGER FOREIGN KEY)")
 
-    # my_cursor.execute("CREATE TABLE users (name VARCHAR(255), "
-    #                   "email VARCHAR(255), "
-    #                   "age INTEGER(10), "
-    #                   "user_id INTEGER AUTO_INCREMENT PRIMARY KEY)")
-
-    # sqlStuff = "INSERT INTO users (name, email, age) VALUES (%s, %s, %s)"
-    # record1 = ("John", "john@codemy.com", 40)
-
-    # my_cursor.execute(sqlStuff, record1)
-    # mydb.commit()
-
+def create_visits_projects_table(database):
+    """
+    Create the 'visits_projects' table in the database if it does not already exist.
+    This table is an intermediary table allowing a many-to-many relationship between the 'visits' table and the
+    'projects' table reflecting the fact that some visits include multiple projects and some projects take multiple
+    visits to complete.
+    :param database: Database in which to add the table
+    :return: none.
+    """
+    my_cursor = database.cursor()
+    my_cursor.execute("CREATE TABLE IF NOT EXISTS visits_projects ("
+                      "visit_project_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
+                      "visit_id INTEGER, FOREIGN KEY(visit_id) REFERENCES Visits(visit_id),"
+                      "project_id INTEGER, FOREIGN KEY(project_id) REFERENCES Projects(project_id)"
+                      ")")

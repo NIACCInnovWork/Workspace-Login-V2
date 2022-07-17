@@ -64,7 +64,7 @@ class TestDatabase(unittest.TestCase):
 
         # Iterate to create clean tables list
         table_list = []
-        intended_tables_list = ['users', 'visits']
+        intended_tables_list = ['users', 'visits', 'projects', 'visits_projects']
         for table in my_cursor:
             table_list.append(str(table[0]))
 

@@ -89,5 +89,6 @@ class User:
         my_cursor = database.cursor()
         sql_load_names_command = "SELECT name FROM users"
         my_cursor.execute(sql_load_names_command)
+
         return my_cursor.fetchall()
 

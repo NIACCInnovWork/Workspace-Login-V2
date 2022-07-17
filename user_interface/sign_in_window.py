@@ -9,12 +9,14 @@ from PIL import Image, ImageTk
 from database.class_user import User
 from database.initialize_database import start_workspace_database
 from controller.sign_in_controller import create_visit_from_ui
+import user_interface.launch_gui
 
 
 class SignInPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.parent = parent
         self.controller = controller
 
         # date = dt.datetime.now()
@@ -105,7 +107,7 @@ class SignInPage(tk.Frame):
             user = User.load(database, selected_name)
             print(user.user_id)
             visit = create_visit_from_ui(user.user_id)
-            controller.show_frame("MainPage")
+            self.return_to_main()
 
         # Create Button Frame #############################################
         button_frame = tk.LabelFrame(self, text="buttons")
@@ -113,7 +115,7 @@ class SignInPage(tk.Frame):
         submit_sign_in_button = tk.Button(button_frame, text="Sign In", width=10,
                                           command=sign_in_button)
         cancel_sign_in_button = tk.Button(button_frame, text="Cancel", width=10,
-                                          command=lambda: controller.show_frame("MainPage"))
+                                          command=self.return_to_main)
 
         submit_sign_in_button.grid(row=8, column=3, padx=10)
         cancel_sign_in_button.grid(row=9, column=3, padx=10, pady=(0, 10))
@@ -121,3 +123,7 @@ class SignInPage(tk.Frame):
         button_frame.grid(row=1, column=2)
 
         self.grid(row=1, column=0, rowspan=4, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
+
+    def return_to_main(self):
+        self.destroy()
+        user_interface.launch_gui.MainPage(self.parent, self.controller)

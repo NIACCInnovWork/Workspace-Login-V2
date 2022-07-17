@@ -103,3 +103,15 @@ class Visit:
 
         return visit
 
+    @staticmethod
+    def sign_out_visit(database: mysql.connector, visit_id: int):
+        my_cursor = database.cursor()
+        end_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        sql_logged_out_command = "UPDATE visits SET end_time = %s WHERE visit_id = %s "
+        my_cursor.execute(sql_logged_out_command, (end_time, visit_id))
+        database.commit()
+
+
+
+
+

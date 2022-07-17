@@ -5,14 +5,19 @@ Author: Anthony Riesen
 """
 
 import tkinter as tk
+
+import user_interface.launch_gui
 from controller.new_user_controller import create_user_from_ui
+import user_interface.launch_gui
 
 
 class NewUserPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.parent = parent
         self.controller = controller
+
         new_user_window_title_label = tk.Label(self, text="Create User", font=("Arial", 14), pady=10)
         name_entry_label = tk.Label(self, text="Full Name:", pady=5)
         name_entry = tk.Entry(self, width=30)
@@ -25,7 +30,6 @@ class NewUserPage(tk.Frame):
         is_entrepreneur_checkbox = tk.Radiobutton(self, text="Entrepreneur", pady=5, value=3, variable=user_type_id)
         is_business_checkbox = tk.Radiobutton(self, text="Business Member", pady=5, value=4, variable=user_type_id)
         is_community_checkbox = tk.Radiobutton(self, text="Community Member", pady=5, value=5, variable=user_type_id)
-
 
         def get_new_user_info():
             """
@@ -49,11 +53,11 @@ class NewUserPage(tk.Frame):
                 user_type = ''  # This should indicate an error of some kind has occurred.
 
             create_user_from_ui(name, user_type)
-            controller.show_frame("MainPage")
+            self.return_to_main()
+            # controller.show_frame("MainPage")
 
         submit_new_user_button = tk.Button(self, text="Create User", width=10, command=get_new_user_info)
-        cancel_new_user_button = tk.Button(self, text="Cancel", width=10,
-                                           command=lambda: controller.show_frame("MainPage"))
+        cancel_new_user_button = tk.Button(self, text="Cancel", width=10, command=self.return_to_main)
 
         # Place objects
         new_user_window_title_label.grid(row=0, column=0, columnspan=4)
@@ -69,6 +73,12 @@ class NewUserPage(tk.Frame):
 
         submit_new_user_button.grid(row=4, column=3)
         cancel_new_user_button.grid(row=5, column=3, pady=(0, 10))
+
+        self.grid(row=0, column=0)
+
+    def return_to_main(self):
+        self.destroy()
+        user_interface.launch_gui.MainPage(self.parent, self.controller)
 
 
 #
