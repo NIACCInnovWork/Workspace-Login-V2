@@ -90,11 +90,91 @@ def create_visits_projects_table(database):
     'projects' table reflecting the fact that some visits include multiple projects and some projects take multiple
     visits to complete.
     :param database: Database in which to add the table
-    :return: none.
+    :return: none
     """
     my_cursor = database.cursor()
     my_cursor.execute("CREATE TABLE IF NOT EXISTS visits_projects ("
                       "visit_project_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
                       "visit_id INTEGER, FOREIGN KEY(visit_id) REFERENCES Visits(visit_id),"
                       "project_id INTEGER, FOREIGN KEY(project_id) REFERENCES Projects(project_id)"
+                      ")")
+
+
+def create_usage_log_table(database):
+    """
+    Create the 'usage log' table in the database if it does not already exist.
+    This table primarily stores the time a piece of equipment was used and links the usage to the
+    'materials_consumed_log'.
+    :param database: Database in which to add the table
+    :return: none
+    """
+    my_cursor = database.cursor()
+    my_cursor.execute("CREATE TABLE IF NOT EXISTS usage_log ("
+                      "usage_log_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
+                      "visit_project_id INTEGER, FOREIGN KEY(visit_project_id) "
+                      "REFERENCES Visits_Projects(visit_project_id),"  # Continuation of visit_project_id
+                      "time_used INTEGER"  # Length of time equipment was used stored in seconds
+                      ")")
+
+
+def create_equipment_table(database):
+    """
+    Create the 'equipment' table in the database if it does not already exist.
+    This table primarily stores the name of each piece of available equipment the workspace owns allowing it to
+    dynamically scale as the workspace grows.  Currently, this table is updated manually by makerspace staff via the
+    MySQLWorkbench application.
+    @ToDo - Consider: Should there be a 'retired' field for equipment that no longer is in use?
+    :param database: Database in which to add the table
+    :return: none
+    """
+    my_cursor = database.cursor()
+    my_cursor.execute("CREATE TABLE IF NOT EXISTS equipment ("
+                      "equipment_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
+                      "equipment_name VARCHAR(255) UNIQUE"
+                      ")")
+
+
+def create_materials_table(database):
+    """
+    Create the 'materials' table in the database if it does not already exist.
+    This table stores the materials used by workspace equipment along with the unit of measurement for these materials.
+    Currently, this table is updated manually by makerspace staff via the MySQLWorkbench application.
+    :param database: Database in which to add the table
+    :return: none
+    """
+    my_cursor = database.cursor()
+    my_cursor.execute("CREATE TABLE IF NOT EXISTS materials ("
+                      "material_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
+                      "material_name VARCHAR(255),"  # With Color Information Included
+                      "unit VARCHAR(255)"
+                      ")")
+
+
+def create_equipment_materials_table(database):
+    """
+    Create the 'equipment_materials' table in the database if it does not already exist.
+    This table is an intermediary table allowing a many-to-many relationship between the 'equipment' table and the
+    'materials' table reflecting the fact that some materials can be used across multiple machines and some machines can
+    use multiple materials. Currently, this table is updated manually by makerspace staff via the MySQLWorkbench
+    application.
+    :param database: Database in which to add the table
+    :return: none
+    """
+    my_cursor = database.cursor()
+    my_cursor.execute("CREATE TABLE IF NOT EXISTS equipment_materials ("
+                      "equipment_material_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
+                      "equipment_id INTEGER, FOREIGN KEY(equipment_id) REFERENCES Equipment(equipment_id),"
+                      "material_id INTEGER, FOREIGN KEY(material_id) REFERENCES Materials(material_id)"
+                      ")")
+
+
+def create_materials_consumed_table(database):
+
+    my_cursor = database.cursor()
+    my_cursor.execute("CREATE TABLE IF NOT EXISTS materials_consumed ("
+                      "materials_consumed_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
+                      "equipment_material_id INTEGER, FOREIGN KEY(equipment_material_id) "
+                      "REFERENCES Equipment_Materials(equipment_material_id),"  # continuation of foreign key statement
+                      "usage_log_id INTEGER, FOREIGN KEY(usage_log_id) REFERENCES Usage_log(usage_log_id),"
+                      "amount_consumed INTEGER"  
                       ")")
