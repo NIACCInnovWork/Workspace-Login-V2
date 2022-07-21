@@ -70,6 +70,7 @@ def create_visits_table(database):
 def create_projects_table(database):
     """
     Create the 'projects' table in the database if it does not already exist.
+    @Todo - Consider removing the UNIQUE qualifier on project_name, see todos in class_project as well.
     :param database: Database in which to add the table
     :return: none
     """

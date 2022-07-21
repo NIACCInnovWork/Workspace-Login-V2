@@ -23,7 +23,7 @@ class VisitProject:
         my_cursor = database.cursor()
         sql_create_command = "INSERT INTO visits_projects (visit_id, project_id) VALUES (%s, %s)"
         select_data = (visit_id, project_id)
-        my_cursor.excute(sql_create_command, select_data)
+        my_cursor.execute(sql_create_command, select_data)
         database.commit()
 
         return VisitProject.load(database)
@@ -32,7 +32,7 @@ class VisitProject:
     def load(database: mysql.connector):
         my_cursor = database.cursor()
         sql_load_command = "SELECT * FROM visits_projects ORDER BY visit_project_id DESC LIMIT 1"
-        my_cursor.excute(sql_load_command)
+        my_cursor.execute(sql_load_command)
         record = my_cursor.fetchone()
 
         visit_project = VisitProject(record[0], record[1], record[2])

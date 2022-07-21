@@ -86,6 +86,11 @@ class User:
 
     @staticmethod
     def get_all_visitors(database: mysql.connector):
+        """
+        Method to select all visitors from the database
+        :param database: Workspace Login Database from which the user is loaded
+        :return: List of visitors
+        """
         my_cursor = database.cursor()
         sql_load_names_command = "SELECT name FROM users"
         my_cursor.execute(sql_load_names_command)

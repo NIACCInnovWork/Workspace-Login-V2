@@ -16,10 +16,14 @@ class ProjectFrame(tk.LabelFrame):
         self.project_name = tk.Entry(self)
 
         project_type_label = tk.Label(self, text="Type")
-        self.project_type = tk.Entry(self)
+        self.project_type_variable = tk.StringVar(self)
+        # project_type_variable.set('Personal')  # Set default value
+        self.project_type = ttk.Combobox(self, textvariable=self.project_type_variable)
+        self.project_type['values'] = ('Personal', 'Class', 'Entrepreneurial', 'Business')
+        self.project_type['state'] = 'readonly'
 
         project_description_label = tk.Label(self, text="Description")
-        self.project_description = tk.Text(self, width=30, height=3)
+        self.project_description = tk.Entry(self, width=60)
 
         self.equipment_list_frame = ScrollingListFrame(self, height=115)
         self.equipment_list_frame.grid(row=2, column=1, columnspan=4, padx=10, pady=10)

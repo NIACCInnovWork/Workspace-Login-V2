@@ -85,6 +85,6 @@ class SignOutPage(tk.Frame):
         user_interface.launch_gui.MainPage(self.parent, self.controller)
 
     def log_out_user(self):
-        signout_from_ui(self.visit_data[3])
+        signout_from_ui(self.visit_data[3], self.project_frames_list)  # self.visit_data[3])
         self.destroy()
         user_interface.launch_gui.MainPage(self.parent, self.controller)
