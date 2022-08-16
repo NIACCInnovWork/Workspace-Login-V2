@@ -1,0 +1,42 @@
+Okay, so it seems that my issue is that my foriegn key for the equipment_materials_id is all screwed up
+because python won't let you overload a constructor.  So, I added default values to the constructor in oder to let
+it do stuff properly, but now it is all funky becuase my order is all screwed up.  I think the proper answer is to walk
+these changes back and define a psuedo constructor instead that will let me construct part of an object and not deal
+with this junk.
+
+I am VERY close, everything seems to be getting into the database EXCEPT the materials consumed which I have only
+successfully added to once.  But I am way to tired to try dealing with it any more tonight.
+
+Here is the error message:
+
+Jordon Ryner
+Visit: visit_id: 33, user_id: 12, start_time: 2022-08-02 21:39:06, end_time: None
+0
+0 5 0 24 1440 14 25 5  The equipment_material_id should be 25 here (second to last item)
+0 Yet when I print it alone, I somehow get zero.  So something is wrong, right here!
+Exception in Tkinter callback
+Traceback (most recent call last):
+  File "C:\Users\RieseAnt\AppData\Local\Programs\Python\Python310\lib\site-packages\mysql\connector\connection_cext.py", line 535, in cmd_query
+    self._cmysql.query(query,
+_mysql_connector.MySQLInterfaceError: Cannot add or update a child row: a foreign key constraint fails (`workspace_login_data`.`materials_consumed`, CONSTRAINT `materials_consumed_ibfk_1` FOREIGN KEY (`equipment_material_id`) REFERENCES `equipment_materials` (`equipment_material_id`))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RieseAnt\AppData\Local\Programs\Python\Python310\lib\tkinter\__init__.py", line 1921, in __call__
+    return self.func(*args)
+  File "C:\Users\RieseAnt\OneDrive - North Iowa Area Community College\Documents\GitHub\Workspace-Login-V2\user_interface\sign_out_window.py", line 88, in log_out_user
+    signout_from_ui(self.visit_data[0], self.project_frames_list)  # self.visit_data[3])
+  File "C:\Users\RieseAnt\OneDrive - North Iowa Area Community College\Documents\GitHub\Workspace-Login-V2\controller\sign_out_controller.py", line 76, in signout_from_ui
+    sign_out_object.commit_data(database)
+  File "C:\Users\RieseAnt\OneDrive - North Iowa Area Community College\Documents\GitHub\Workspace-Login-V2\database\class_logout_composite.py", line 88, in commit_data
+    MaterialConsumed.create(database, material_consumed_with_time.material_consumed.amount_consumed,
+  File "C:\Users\RieseAnt\OneDrive - North Iowa Area Community College\Documents\GitHub\Workspace-Login-V2\database\class_material_consumed.py", line 31, in create
+    my_cursor.execute(sql_create_command, select_data)
+  File "C:\Users\RieseAnt\AppData\Local\Programs\Python\Python310\lib\site-packages\mysql\connector\cursor_cext.py", line 269, in execute
+    result = self._cnx.cmd_query(stmt, raw=self._raw,
+  File "C:\Users\RieseAnt\AppData\Local\Programs\Python\Python310\lib\site-packages\mysql\connector\connection_cext.py", line 540, in cmd_query
+    raise errors.get_mysql_exception(exc.errno, msg=exc.msg,
+mysql.connector.errors.IntegrityError: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`workspace_login_data`.`materials_consumed`, CONSTRAINT `materials_consumed_ibfk_1` FOREIGN KEY (`equipment_material_id`) REFERENCES `equipment_materials` (`equipment_material_id`))
+
+Process finished with exit code 0

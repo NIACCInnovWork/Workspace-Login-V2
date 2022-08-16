@@ -71,20 +71,37 @@ class SignOutPage(tk.Frame):
         self.grid(row=1, column=0, rowspan=4, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
 
     def add_project(self):
+        """
+        Create a new project frame and add it to the projects list frame.
+        :return: None
+        """
         project = ProjectFrame(self.projects_list_frame.interior)
         project.on_remove(lambda: self.remove_project(project))
         self.project_frames_list.append(project)
         self.project_frames_list[-1].pack(padx=4, pady=4)
 
     def remove_project(self, project: ProjectFrame):
+        """
+        Remove the particular project frame selected from the projects list frame.
+        :param project: Project frame to be removed
+        :return: None
+        """
         self.project_frames_list.remove(project)
         project.destroy()
 
     def return_to_main(self):
+        """
+        Return to the main frame representing the homepage.
+        :return: None
+        """
         self.destroy()
         user_interface.launch_gui.MainPage(self.parent, self.controller)
 
     def log_out_user(self):
-        signout_from_ui(self.visit_data[3], self.project_frames_list)  # self.visit_data[3])
+        """
+        Call the Sign-Out From UI method and return to the homepage.
+        :return: None
+        """
+        signout_from_ui(self.visit_data[0], self.project_frames_list)  # self.visit_data[3])
         self.destroy()
         user_interface.launch_gui.MainPage(self.parent, self.controller)

@@ -7,8 +7,6 @@ import datetime
 
 import mysql.connector
 
-from database.class_user import User
-
 
 class Visit:
     """
@@ -79,6 +77,26 @@ class Visit:
         return visit
 
     @staticmethod
+    def load_by_user_name(database: mysql.connector, user_name: str):
+        """
+        This method allows the loading of a particular visit by the user's name.
+        :param database: Workspace Login Database from which the visit is loaded
+        :param user_name: Username of the visit to be loaded
+        :return: Visit object with the timestamp requested
+        """
+        my_cursor = database.cursor()
+        sql_load_command = "SELECT * FROM users JOIN visits ON users.user_id = visits.user_id " \
+                           "WHERE users.name = %s AND visits.end_time IS NULL"
+        my_cursor.execute(sql_load_command, (user_name,))
+        record = my_cursor.fetchone()
+
+        # I suspect this will currently will throw an error because timestamp (record[3]) cannot be null
+        visit = Visit(record[4], record[5], record[6], record[7])
+
+        print(visit)
+        return visit
+
+    @staticmethod
     def get_logged_in_users(database: mysql.connector):
         """
         Class that queries the database for users which are currently logged in.
@@ -95,6 +113,12 @@ class Visit:
 
     @staticmethod
     def check_logged_in(database: mysql.connector, user_id: int):
+        """
+        Load the visit from the database with the given user_id and no end_time.
+        :param database: Database connection from which the data will be pulled.
+        :param user_id: Integer user_id foreign key for the visit.
+        :return: None
+        """
         my_cursor = database.cursor()
         sql_logged_in_command = "SELECT * FROM visits WHERE user_id = %s AND end_time IS NULL"
         my_cursor.execute(sql_logged_in_command, (user_id,))
@@ -105,13 +129,14 @@ class Visit:
 
     @staticmethod
     def sign_out_visit(database: mysql.connector, visit_id: int):
+        """
+        Sign out from the visit database with the current time on sign-out.
+        :param database: Database with the visit to be updated.
+        :param visit_id: Primary key of the visit to be updated.
+        :return: None
+        """
         my_cursor = database.cursor()
         end_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         sql_logged_out_command = "UPDATE visits SET end_time = %s WHERE visit_id = %s "
         my_cursor.execute(sql_logged_out_command, (end_time, visit_id))
         database.commit()
-
-
-
-
-

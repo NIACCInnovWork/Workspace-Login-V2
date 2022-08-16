@@ -20,6 +20,14 @@ class VisitProject:
 
     @staticmethod
     def create(database: mysql.connector, visit_id, project_id):
+        """
+        Method to create a new visit_project in the database. Static method so that it can be called independently of a
+        specific object.  Calls out to the 'load' method after creating the visit_project in the database.
+        :param database: Workspace Login Database in which the visit_project is added
+        :param visit_id: Foreign key of the visit id
+        :param project_id: Foreign key of the project id
+        :return: VisitProject object just added to the database
+        """
         my_cursor = database.cursor()
         sql_create_command = "INSERT INTO visits_projects (visit_id, project_id) VALUES (%s, %s)"
         select_data = (visit_id, project_id)
@@ -30,6 +38,12 @@ class VisitProject:
 
     @staticmethod
     def load(database: mysql.connector):
+        """
+        Method to load the last VisitProject object that was commit to the database.
+        @Todo - This should be able to be merged into the create method by returning the primary key during SQL INSERT
+        :param database: Workspace Login Database from which the visit_project is pulled
+        :return: VisitProject object
+        """
         my_cursor = database.cursor()
         sql_load_command = "SELECT * FROM visits_projects ORDER BY visit_project_id DESC LIMIT 1"
         my_cursor.execute(sql_load_command)
