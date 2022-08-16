@@ -1,0 +1,44 @@
+This document was designed to sort notes about using a MySQL database
+
+    SQL Transactions
+        A transaction with the SQL database usually has four parts:
+            1. Defining a cursor
+            2. Creating your query
+            3. Executing the query
+            4. Committing the change or fetching the results
+
+    Pulling Data from the Database
+       Querying data always follows the following format
+            SELECT [property] FROM [table]
+       The property can be replaced by * to select all properties
+
+       The keyword WHERE can be used to filter the data
+            SELECT * FROM users WHERE age = 27
+
+       Wild cards, %, and the keyword LIKE can be used to select partial data
+            SELECT * FROM users WHERE name LIKE 'Mi%'
+       This will select records for people with names like "Mike", "Michael", "Michelle", etc.
+       The wild card can also be used at both ends to get portions like '%ac%' to find a
+            name that has 'ac' in it anywhere
+
+       You are also able to limit your results from a query by using the LIMIT keyword
+            SELECT * FROM users LIMIT 5
+       This code will only return 5 records, rather than loading the entire database
+       Additionally, you don't have to have the limit start at the beginning, by using the OFFSET keyword
+            SELECT * FROM users LIMIT 5 OFFSET 2
+       Returns records 3, 4, 5, 6, 7 instead of 1-5
+
+       You can sort a query using the keywords ORDER BY
+            SELECT * FROM users ORDER BY name
+       This will return alphabetized results
+       Adding the keyword DESC will order the results descending instead
+
+    When writing SQL commands, it is good to use "%s" as a placeholder fill in because it provides
+        some level of security against SQL injections.
+
+
+    Updating Record:
+        UPDATE users SET age = 13 WHERE name = 'Bob'
+
+    Deleting Record:
+        DELETE FROM users WHERE name = 'Mike'

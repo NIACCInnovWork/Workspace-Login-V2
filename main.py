@@ -1,47 +1,45 @@
-# This application is the updated login system for the NIACC Innovation Workspace.
-
-# Import key libraries
-import tkinter.messagebox
-from tkinter import *
-import datetime as dt
-
-# Import of additional files
-from sign_in_window import *
-from new_user_window import *
-from sign_out_window import *
-
-# Format the main window
-root = Tk()  # Must come first because it defines the window
-root.title('Innovation Workspace Login')  # Create title of the window
+"""
+NIACC Innovation Workspace Login V2
+Main file that serves as the starting place for the login application.
+Author: Anthony Riesen
+"""
 
 
-def disable_close():
-    tkinter.messagebox.showinfo("Close Disabled", "The regular exit feature has been disabled to prevent the "
-                                                  "application from closing prematurely. \n \n "
-                                                  "Thank you, "
-                                                  "\n Workspace Staff")
+import tkinter as tk
+from tkinter import font as tkfont
+from database.initialize_database import *
+
+import user_interface.launch_gui
 
 
-root.protocol("WM_DELETE_WINDOW", disable_close)
+class LoginApplication(tk.Tk):
 
-workspaceLogo = PhotoImage(file='Innovation Workspace Logo-Official-Scaled.png')  # Import Logo
-logoLabel = Label(root, image=workspaceLogo)  # Place Logo into a Label
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
 
-# Implement Datetime
-date = dt.datetime.now()
+        self.title("Workspace Login Application")
 
-# Creating buttons for the main page
-signInButton = Button(root, text="Sign In", font=("Arial", 14),
-                      height=3, width=10, command=lambda: open_sign_in(root, date))  # Creating Sign In Button
-newUserButton = Button(root, text="New User", font=("Arial", 14),
-                       height=3, width=10, command=lambda: open_new_user(root, date))  # Creating New User Button
-signOutButton = Button(root, text="Sign Out", font=("Arial", 14),
-                       height=3, width=10, command=lambda: open_sign_out(root, date))  # Creating Sign Out Button
+        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
-# Placing Objects on Screen
-logoLabel.grid(row=0, column=0, columnspan=3)
-signInButton.grid(row=1, column=0, pady=10)
-newUserButton.grid(row=1, column=1, pady=10)
-signOutButton.grid(row=1, column=2, pady=10)
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
 
-root.mainloop()  # Creating an event loop
+        mainframe = user_interface.launch_gui.MainPage(container, self)
+
+
+if __name__ == "__main__":
+    create_workspace_database()
+    mydb = start_workspace_database()
+    create_users_table(mydb)
+    create_visits_table(mydb)
+    create_projects_table(mydb)
+    create_visits_projects_table(mydb)
+    create_usage_log_table(mydb)
+    create_equipment_table(mydb)
+    create_materials_table(mydb)
+    create_equipment_materials_table(mydb)
+    create_materials_consumed_table(mydb)
+    app = LoginApplication()
+    app.mainloop()
