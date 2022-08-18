@@ -65,7 +65,7 @@ class User:
 
         print(my_cursor.lastrowid)
 
-        return User.load_by_name(database, name)
+        return User.load(database, my_cursor.lastrowid)
 
     @staticmethod
     def load_by_name(database: mysql.connector, name: str):
