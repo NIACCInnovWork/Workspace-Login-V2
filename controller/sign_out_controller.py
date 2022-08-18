@@ -25,7 +25,7 @@ def load_visit_data(user_name: str):
     :return: (User Name, User Type, Visit Start Time, Visit ID)
     """
     database = start_workspace_database()
-    user = User.load(database, user_name)
+    user = User.load_by_name(database, user_name)
     visit = Visit.check_logged_in(database, user.user_id)
 
     visit_data = (user.name, user.user_type, visit.start_time, visit.visit_id)

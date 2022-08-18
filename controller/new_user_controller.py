@@ -24,7 +24,8 @@ def create_user_from_ui(name: str, user_type: str):
     print(name, user_type)
 
     try:
-        user = User.load(database, name)
+        user = User.load_by_name(database, name)
+        # user = User.load(database, user_id)
     except TypeError:
         user = User.create(database, name, UserType[user_type])
         visit = Visit.create(database, user.user_id)
