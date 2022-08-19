@@ -74,21 +74,20 @@ class Project:
         my_cursor.execute(sql_create_command, select_data)
         database.commit()
 
-        return Project.load(database, project_name)
+        return Project.load(database, my_cursor.lastrowid)
 
     @staticmethod
-    def load(database: mysql.connector, project_name: str):
+    def load(database: mysql.connector, project_id: int):
         """
         Method to load a user from the database. Static method so that it can be call independently of a specific
         object.
-        @ToDo - Perhaps split this into two load methods, a "load last" method and a "load" that uses an id, allows project names to no longer be unique
         :param database: Workspace Login Database from which the project is loaded
-        :param project_name: Name of the project in question
-        :return: Project object with the project name requested
+        :param project_id: Primary key for the project
+        :return: Project object for record
         """
         my_cursor = database.cursor()
-        sql_load_command = "SELECT * FROM projects WHERE project_name = %s"
-        my_cursor.execute(sql_load_command, (project_name,))
+        sql_load_command = "SELECT * FROM projects WHERE project_id = %s"
+        my_cursor.execute(sql_load_command, (project_id,))
         record = my_cursor.fetchone()
 
         project = Project(record[0], record[1], record[2], ProjectType[record[3]])

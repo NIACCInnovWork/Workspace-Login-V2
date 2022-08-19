@@ -56,28 +56,39 @@ class SignOutComposite:
         :param project_type: Classification of the project for simpler analysis
         :return: None
         """
-        try:
-            # @todo - If the Project exists, do we ask the user to confirm they want to add to an existing project?
-            # Check whether the project already exists in the database.
-            project = Project.load(database, project_name)
 
-            # Create ProjectWithMaterials instance and append to project list
-            project_with_materials = ProjectWithMaterials(project, [])
-            tkinter.messagebox.showinfo("Project Exists", "This project '" + project_name + "' already exists.")
+        # Create a new Project object to be stored later
+        project = Project.factory(project_name, project_description, project_type)  # No project_id yet
+        tkinter.messagebox.showinfo("Project Created", "The project '" + project_name + "' has been created.")
 
-        except TypeError:
-            # If the project doesn't already exist in the database, create a new Project object to be stored later
-            project = Project.factory(project_name, project_description, project_type)  # No project_id yet
-            tkinter.messagebox.showinfo("Project Created", "The project '" + project_name + "' has been created.")
+        # Create ProjectWithMaterials instance and append to project list
+        project_with_materials = ProjectWithMaterials(project, [])
+        self.project_list.append(project_with_materials)  # Add the Project to the Project List
 
-            # Create ProjectWithMaterials instance and append to project list
-            project_with_materials = ProjectWithMaterials(project, [])
-            self.project_list.append(project_with_materials)  # Add the Project to the Project List
-            return len(self.project_list)
+        return len(self.project_list)  # Returns the project length as the index of the last added project
 
-        else:
-            self.project_list.append(project_with_materials)  # Add the Project to the Project List
-            return len(self.project_list)  # Returns the project length as the index of the last added project
+        # try:
+        #     # @todo - If the Project exists, do we ask the user to confirm they want to add to an existing project?
+        #     # Check whether the project already exists in the database.
+        #     project = Project.load_by_name(database, project_name)
+        #
+        #     # Create ProjectWithMaterials instance and append to project list
+        #     project_with_materials = ProjectWithMaterials(project, [])
+        #     tkinter.messagebox.showinfo("Project Exists", "This project '" + project_name + "' already exists.")
+        #
+        # except TypeError:
+        #     # If the project doesn't already exist in the database, create a new Project object to be stored later
+        #     project = Project.factory(project_name, project_description, project_type)  # No project_id yet
+        #     tkinter.messagebox.showinfo("Project Created", "The project '" + project_name + "' has been created.")
+        #
+        #     # Create ProjectWithMaterials instance and append to project list
+        #     project_with_materials = ProjectWithMaterials(project, [])
+        #     self.project_list.append(project_with_materials)  # Add the Project to the Project List
+        #     return len(self.project_list)
+        #
+        # else:
+        #     self.project_list.append(project_with_materials)  # Add the Project to the Project List
+        #     return len(self.project_list)  # Returns the project length as the index of the last added project
 
     def add_material_usage(self, project_index, equipment_material_id, amount_consumed, time_used):
         """
