@@ -77,7 +77,7 @@ def create_projects_table(database):
     my_cursor = database.cursor()
     my_cursor.execute("CREATE TABLE IF NOT EXISTS projects ("
                       "project_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
-                      "project_name VARCHAR(255) UNIQUE,"
+                      "project_name VARCHAR(255),"
                       "project_description VARCHAR(510),"
                       "project_type ENUM('Personal', 'Class', 'Entrepreneurial', 'Business')"
                       ")")

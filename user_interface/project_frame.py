@@ -100,7 +100,8 @@ class EquipmentFrame(tk.Frame):
 
         def set_unit(event):
             material_name = event.widget.get()
-            material_unit = Material.get_unit(database, material_name)
+            index = self.material_list.index(material_name)
+            material_unit = Material.get_unit(database, self.material_names_ids[index][1])
             self.amount_used_unit.config(text=material_unit)
 
         # Data Validation to ensure time and amount entries are integers only

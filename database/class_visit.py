@@ -104,8 +104,8 @@ class Visit:
         :return: List of names of the members who have a visit with no logout timestamp
         """
         my_cursor = database.cursor()
-        sql_logged_in_users_command = "SELECT users.name FROM users JOIN visits ON users.user_id = visits.user_id " \
-                                      "WHERE visits.end_time IS NULL"
+        sql_logged_in_users_command = "SELECT users.name, users.user_id FROM users JOIN visits ON " \
+                                      "users.user_id = visits.user_id WHERE visits.end_time IS NULL"
         my_cursor.execute(sql_logged_in_users_command)
         logged_in_users = my_cursor.fetchall()
 

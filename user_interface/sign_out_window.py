@@ -10,14 +10,14 @@ from user_interface.project_frame import ProjectFrame
 
 class SignOutPage(tk.Frame):
 
-    def __init__(self, parent, controller, selected_user_name):
+    def __init__(self, parent, controller, selected_user_id):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.controller = controller
-        self.user_name = selected_user_name
+        self.user_name = selected_user_id
 
         # Pull Data from Database
-        self.visit_data = load_visit_data(selected_user_name)
+        self.visit_data = load_visit_data(selected_user_id)
         current_time = dt.datetime.now()
 
         # Create Visit Info Frame ##################################################

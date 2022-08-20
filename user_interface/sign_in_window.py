@@ -26,15 +26,15 @@ class SignInPage(tk.Frame):
 
         # Pull Data
         database = start_workspace_database()
-        user_list = User.get_all_visitors(database)
+        self.user_list = User.get_all_visitors(database)
 
         # Create listbox & scrollbar
         user_scrollbar = tk.Scrollbar(users_frame, orient="vertical")
         users_list_box = tk.Listbox(users_frame, yscrollcommand=user_scrollbar.set, height=15)
 
         # Populate listbox
-        for name in user_list:
-            users_list_box.insert(user_list.index(name), name[0])
+        for user in self.user_list:
+            users_list_box.insert(self.user_list.index(user), user[0])
 
         # Configure & pack listbox/scrollbar
         user_scrollbar.config(command=users_list_box.yview)
@@ -91,10 +91,10 @@ class SignInPage(tk.Frame):
             selection = event.widget.curselection()
             if selection:
                 index = selection[0]
-                selected_name = event.widget.get(index)
-                user = User.load(database, selected_name)
-                user_name_entry_label.configure(text=user.name)
-                user_type_entry_label.configure(text=user.user_type)
+                selected_id = self.user_list[index][1]
+                selected_user = User.load(database, selected_id)
+                user_name_entry_label.configure(text=selected_user.name)
+                user_type_entry_label.configure(text=selected_user.user_type)
                 visit_date_entry_label.configure(text=str(dt.datetime.now()))
             else:
                 user_name_label.configure(text="")
@@ -103,10 +103,10 @@ class SignInPage(tk.Frame):
 
         # Create function for start visit label
         def sign_in_button():
-            selected_name = users_list_box.get(users_list_box.curselection())
-            user = User.load(database, selected_name)
-            print(user.user_id)
-            visit = create_visit_from_ui(user.user_id)
+            # selected_name = users_list_box.get(users_list_box.curselection())
+            index = users_list_box.curselection()
+            selected_id = self.user_list[index[0]][1]
+            create_visit_from_ui(selected_id)
             self.return_to_main()
 
         # Create Button Frame #############################################

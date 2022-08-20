@@ -63,13 +63,15 @@ class User:
         my_cursor.execute(sql_create_command, select_data)
         database.commit()  # End of Transaction
 
-        return User.load(database, name)
+        print(my_cursor.lastrowid)
+
+        return User.load(database, my_cursor.lastrowid)
 
     @staticmethod
-    def load(database: mysql.connector, name: str):
+    def load_by_name(database: mysql.connector, name: str):
         """
         Method to load a user from the database. Static method so that it can be called independent of a specific
-        object.
+        object.  Deprecated Method actively being removed.
         :param database: Workspace Login Database from which the user is loaded
         :param name: Full name of the user being loaded
         :return: User object with the full name requested
@@ -85,15 +87,45 @@ class User:
         return user
 
     @staticmethod
-    def get_all_visitors(database: mysql.connector):
+    def load(database: mysql.connector, user_id: int):
         """
-        Method to select all visitors from the database
-        :param database: Workspace Login Database from which the user is loaded
-        :return: List of visitors
+        Method to load a user from the database by their user_id.  Designed to replace load_by_name method above.
+        :param database: Workspace Login Database from which the user is loaded.
+        :param user_id: Primary key for the user being loaded
+        :return: User object with the user_id provided
         """
         my_cursor = database.cursor()
-        sql_load_names_command = "SELECT name FROM users"
+        sql_load_command = "SELECT * FROM users WHERE user_id = %s"
+        my_cursor.execute(sql_load_command, (user_id,))
+        record = my_cursor.fetchone()
+        user = User(record[0], record[1], record[2], UserType[record[3]])
+
+        return user
+
+    # @staticmethod
+    # def get_all_visitors_name_only(database: mysql.connector):
+    #     """
+    #     Method to select all visitors from the database
+    #     :param database: Workspace Login Database from which the user is loaded
+    #     :return: List of visitors
+    #     """
+    #     my_cursor = database.cursor()
+    #     sql_load_names_command = "SELECT name FROM users"
+    #     my_cursor.execute(sql_load_names_command)
+    #
+    #     return my_cursor.fetchall()
+
+    @staticmethod
+    def get_all_visitors(database: mysql.connector):
+        """
+        Method to select all visitors from the database.
+        :param database: Workspace Login Database from which the user is loaded
+        :return: List of users and user_ids
+        """
+        my_cursor = database.cursor()
+        sql_load_names_command = "SELECT name, user_id FROM users"
         my_cursor.execute(sql_load_names_command)
 
         return my_cursor.fetchall()
+
 

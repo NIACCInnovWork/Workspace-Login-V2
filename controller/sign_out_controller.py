@@ -17,16 +17,16 @@ seconds_per_hour = 3600
 seconds_per_minute = 60
 
 
-def load_visit_data(user_name: str):
+def load_visit_data(user_id: int):
     """
     Loads and returns the relevant data for populating the sign-out page given the username of the person being
     logged out.
-    :param user_name: Name of the user being logged out.
+    :param user_id: User_id of the user being logged out
     :return: (User Name, User Type, Visit Start Time, Visit ID)
     """
     database = start_workspace_database()
-    user = User.load(database, user_name)
-    visit = Visit.check_logged_in(database, user.user_id)
+    user = User.load(database, user_id)  # This is simply used the get the user_id, may not be needed
+    visit = Visit.check_logged_in(database, user_id)
 
     visit_data = (user.name, user.user_type, visit.start_time, visit.visit_id)
     return visit_data

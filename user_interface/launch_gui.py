@@ -30,15 +30,15 @@ class MainPage(tk.Frame):
 
         # Pull Data
         database = start_workspace_database()
-        users_logged_in = Visit.get_logged_in_users(database)
+        self.users_logged_in = Visit.get_logged_in_users(database)
 
         # Create listbox & scrollbar
         scrollbar = tk.Scrollbar(logged_in_frame, orient="vertical")
         self.logged_in_listbox = tk.Listbox(logged_in_frame, yscrollcommand=scrollbar.set, height=15)
 
         # Populate listbox
-        for name in users_logged_in:
-            self.logged_in_listbox.insert(users_logged_in.index(name), name[0])
+        for visitor in self.users_logged_in:
+            self.logged_in_listbox.insert(self.users_logged_in.index(visitor), visitor[0])
 
         # Configure & pack listbox/scrollbar
         scrollbar.config(command=self.logged_in_listbox.yview)
@@ -92,10 +92,14 @@ class MainPage(tk.Frame):
         :return:
         """
         try:
-            selected_name = self.logged_in_listbox.get(self.logged_in_listbox.curselection())
-            print(selected_name)
+            index = self.logged_in_listbox.curselection()
+            print(index)
+            selected_name = self.logged_in_listbox.get(index)
+            selected_id = self.users_logged_in[index[0]][1]
+            # print(selected_name)
             self.destroy()
-            user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_name)
+            # user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_name)
+            user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_id)
         except tk.TclError:
             tk.messagebox.showwarning("Select User", "You need to select your name from the list of logged in users!")
 

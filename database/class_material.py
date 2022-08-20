@@ -43,14 +43,14 @@ class Material:
         return material_names
 
     @staticmethod
-    def get_unit(database: mysql.connector, material_name: str):
+    def get_unit(database: mysql.connector, material_id: int):
         """
         Retrieve the unit associated with a particular material.
         :param database: Database from which the data will be pulled
-        :param material_name: Name of the material in question
+        :param material_id: Primary key of the material in question
         :return: Unit of the material (String)
         """
         my_cursor = database.cursor()
-        sql_load_command = "SELECT unit FROM materials WHERE material_name = %s"
-        my_cursor.execute(sql_load_command, (material_name,))
+        sql_load_command = "SELECT unit FROM materials WHERE material_id = %s"
+        my_cursor.execute(sql_load_command, (material_id,))
         return my_cursor.fetchone()
