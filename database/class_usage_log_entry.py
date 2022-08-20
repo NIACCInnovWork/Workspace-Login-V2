@@ -37,19 +37,19 @@ class UsageLogEntry:
         my_cursor.execute(sql_create_command, select_data)
         database.commit()
 
-        return UsageLogEntry.load_last(database)
+        return UsageLogEntry.load(database, my_cursor.lastrowid)
 
     @staticmethod
-    def load_last(database: mysql.connector):
+    def load(database: mysql.connector, usage_log_id: int):
         """
-        Method to load the last UsageLogEntry object added to the database.  Called in the Create method.
-        @ToDo - Should be able to return the primary key without needing this operation, if so remove this method.
-        :param database:
-        :return:
+        Method to load in a usage_log entry from the database.  Called in Create method.
+        :param database: Innovation Workspace database in which the data is stored
+        :param usage_log_id: Primary key for the usage_log in question
+        :return: Usage_log object containing the details from the database
         """
         my_cursor = database.cursor()
-        sql_load_command = "SELECT * FROM usage_log ORDER BY usage_log_id DESC LIMIT 1"
-        my_cursor.execute(sql_load_command)
+        sql_load_command = "SELECT * FROM usage_log WHERE usage_log_id = %s"
+        my_cursor.execute(sql_load_command, (usage_log_id,))
         record = my_cursor.fetchone()
 
         usage_log_entry = UsageLogEntry(record[0], record[1], record[2])
