@@ -6,6 +6,7 @@ from database.class_equipment import Equipment
 from database.class_material import Material
 from database.initialize_database import start_workspace_database
 from user_interface.ScrollingListFrame import ScrollingListFrame
+from user_interface.find_project_window import FindProjectWindow
 
 
 class ProjectFrame(tk.LabelFrame):
@@ -37,6 +38,7 @@ class ProjectFrame(tk.LabelFrame):
         self.add_equipment()
 
         add_equipment_button = tk.Button(self, text="Add Another Equipment", command=self.add_equipment)
+        find_project_button = tk.Button(self, text="Find Project", command=self.find_project)
         remove_project_button = tk.Button(self, text="Remove Project", command=lambda: self.on_remove_callback())
 
         project_name_label.grid(row=0, column=0, sticky=tk.E)
@@ -49,7 +51,8 @@ class ProjectFrame(tk.LabelFrame):
         self.project_description.grid(row=1, column=1, columnspan=3, sticky=tk.W)
 
         add_equipment_button.grid(row=3, column=1, padx=10, pady=10)
-        remove_project_button.grid(row=0, column=4, padx=4, pady=4)
+        find_project_button.grid(row=0, column=4, padx=4, pady=4)
+        remove_project_button.grid(row=1, column=4, padx=4, pady=4)
 
     def add_equipment(self):
         """
@@ -60,6 +63,10 @@ class ProjectFrame(tk.LabelFrame):
         equipment.on_remove(lambda: self.remove_equipment(equipment))
         self.equipment_frames_list.append(equipment)
         self.equipment_frames_list[-1].pack(padx=4, pady=4)
+
+    def find_project(self):
+        # Toplevel object which will be treated as a new window
+        find_project_window = FindProjectWindow(self)
 
     def remove_equipment(self, equipment: 'EquipmentFrame'):
         """
