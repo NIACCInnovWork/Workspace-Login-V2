@@ -46,13 +46,24 @@ def signout_from_ui(user_name: str, project_frames_list: []):
 
     for project_frame in project_frames_list:
         # Collect Project Info
-        project_name = project_frame.project_name.get()
-        project_description = project_frame.project_description.get()
-        project_type = ProjectType[project_frame.project_type_variable.get()]
+        if project_frame.selected_project.project_id == 0:
+            project_name = project_frame.project_name.get()
+            project_description = project_frame.project_description.get()
+            project_type = ProjectType[project_frame.project_type_variable.get()]
 
-        project_list_length = sign_out_object.add_project(database, project_name, project_description, project_type)
-        project_index = project_list_length - 1
-        print(project_index)
+            project_list_length = sign_out_object.add_project(0, project_name, project_description, project_type,
+                                                              database)
+            project_index = project_list_length - 1
+            # @ToDo - this portion looks strange, check if this is really needed anymore
+            print(project_index)
+        elif project_frame.selected_project.project_id != 0:
+            project_list_length = sign_out_object.add_project(project_frame.selected_project.project_id,
+                                                              project_frame.selected_project.project_name,
+                                                              project_frame.selected_project.project_description,
+                                                              project_frame.selected_project.project_type,
+                                                              database)
+            project_index = project_list_length - 1
+            print(project_index)
 
         for equipment_frame in project_frame.equipment_frames_list:
             # Collect Usage Info

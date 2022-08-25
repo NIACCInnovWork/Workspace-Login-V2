@@ -45,21 +45,26 @@ class SignOutComposite:
 
         return composite
 
-    def add_project(self, database: mysql.connector, project_name: str, project_description: str,
-                    project_type: ProjectType):
+    def add_project(self, project_id: int, project_name: str, project_description: str, project_type: ProjectType,
+                    database: mysql.connector):
         """
         Method to add projects to a SignOutComposite object.  This includes constructing the projects themselves and
         checking to make sure all the data is present.
-        :param database: Innovation Workspace Database
+        :param project_id: ID of the project, set to 0 if not yet in the database
         :param project_name: Name of the Project
         :param project_description: Description of the project for additional detail
         :param project_type: Classification of the project for simpler analysis
+        :param database: Innovation Workspace Database used to load info if project already exists
         :return: None
         """
 
         # Create a new Project object to be stored later
-        project = Project.factory(project_name, project_description, project_type)  # No project_id yet
-        tkinter.messagebox.showinfo("Project Created", "The project '" + project_name + "' has been created.")
+        project = ""  # placeholder for project
+        if project_id == 0:
+            project = Project.factory(project_name, project_description, project_type)  # No project_id yet
+        elif project_id != 0:
+            project = Project.load(database, project_id)
+        # tkinter.messagebox.showinfo("Project Created", "The project '" + project_name + "' has been created.")
 
         # Create ProjectWithMaterials instance and append to project list
         project_with_materials = ProjectWithMaterials(project, [])
@@ -90,9 +95,13 @@ class SignOutComposite:
         # Commit Projects to database and create visit_project table entry
         for project_with_materials in self.project_list:
             # Create Project in the database
-            recorded_project = Project.create(database, project_with_materials.project.project_name,
-                                              project_with_materials.project.project_description,
-                                              project_with_materials.project.project_type)
+            recorded_project = ""  # Placeholder for project
+            if project_with_materials.project.project_id == 0:
+                recorded_project = Project.create(database, project_with_materials.project.project_name,
+                                                  project_with_materials.project.project_description,
+                                                  project_with_materials.project.project_type)
+            elif project_with_materials.project.project_id != 0:
+                recorded_project = project_with_materials.project
 
             # Create VisitProject in the database to link the project with the visit
             visit_project = VisitProject.create(database, self.visit.visit_id, recorded_project.project_id)
@@ -110,8 +119,3 @@ class SignOutComposite:
                                         usage_log_entry.usage_log_id)
 
         tkinter.messagebox.showinfo("Data Committed Properly", "The data has been commit to the database.")
-
-
-
-
-

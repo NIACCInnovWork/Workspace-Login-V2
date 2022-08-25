@@ -4,6 +4,7 @@ from typing import Callable
 
 from database.class_equipment import Equipment
 from database.class_material import Material
+from database.class_project import Project, ProjectType
 from database.initialize_database import start_workspace_database
 from user_interface.ScrollingListFrame import ScrollingListFrame
 from user_interface.find_project_window import FindProjectWindow
@@ -12,23 +13,28 @@ from user_interface.find_project_window import FindProjectWindow
 class ProjectFrame(tk.LabelFrame):
     # @Todo - Need to handle default values in some way
 
-    def __init__(self, parent):
+    def __init__(self, parent, user_id):
         tk.LabelFrame.__init__(self, parent)
+        self.parent = parent
+        self.user_id = user_id
+        self.selected_project = Project.factory("", "", ProjectType["Personal"])  # Create empty Project for selecting
 
         self.on_remove_callback = None
 
         project_name_label = tk.Label(self, text="Name: ")
-        self.project_name = tk.Entry(self)
+        self.project_name_variable = tk.StringVar(self)
+        self.project_name = tk.Entry(self, textvariable=self.project_name_variable)
 
         project_type_label = tk.Label(self, text="Type: ")
         self.project_type_variable = tk.StringVar(self)
         # project_type_variable.set('Personal')  # Set default value
         self.project_type = ttk.Combobox(self, textvariable=self.project_type_variable)
-        self.project_type['values'] = ('Personal', 'Class', 'Entrepreneurial', 'Business')
+        self.project_type['values'] = ('Personal', 'Class', 'Entrepreneurial', 'Business', 'Community', 'WorkStudy')
         self.project_type['state'] = 'readonly'
 
         project_description_label = tk.Label(self, text="Description: ")
-        self.project_description = tk.Entry(self, width=60)
+        self.project_description_variable = tk.StringVar(self)
+        self.project_description = tk.Entry(self, width=60, textvariable=self.project_description_variable)
 
         self.equipment_list_frame = ScrollingListFrame(self, height=115)
         self.equipment_list_frame.grid(row=2, column=1, columnspan=4, padx=10, pady=10)
@@ -66,7 +72,15 @@ class ProjectFrame(tk.LabelFrame):
 
     def find_project(self):
         # Toplevel object which will be treated as a new window
-        find_project_window = FindProjectWindow(self)
+        find_project_window = FindProjectWindow(self, self.user_id)
+
+    def set_selected_project_info(self):
+        self.project_name_variable.set(self.selected_project.project_name)
+        self.project_name.config(state="disabled")
+        self.project_description_variable.set(self.selected_project.project_description)
+        self.project_description.config(state="disabled")
+        self.project_type_variable.set(self.selected_project.project_type.name)
+        self.project_type.config(state="disabled")
 
     def remove_equipment(self, equipment: 'EquipmentFrame'):
         """
