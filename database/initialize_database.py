@@ -79,7 +79,7 @@ def create_projects_table(database):
                       "project_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
                       "project_name VARCHAR(255),"
                       "project_description VARCHAR(510),"
-                      "project_type ENUM('Personal', 'Class', 'Entrepreneurial', 'Business')"
+                      "project_type ENUM('Personal', 'Class', 'Entrepreneurial', 'Business', 'Community', 'Work_Study')"
                       ")")
 
 

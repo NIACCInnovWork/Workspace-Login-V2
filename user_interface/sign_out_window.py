@@ -14,10 +14,10 @@ class SignOutPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.controller = controller
-        self.user_name = selected_user_id
+        self.selected_user_id = selected_user_id
 
         # Pull Data from Database
-        self.visit_data = load_visit_data(selected_user_id)
+        self.visit_data = load_visit_data(self.selected_user_id)
         current_time = dt.datetime.now()
 
         # Create Visit Info Frame ##################################################
@@ -75,7 +75,7 @@ class SignOutPage(tk.Frame):
         Create a new project frame and add it to the projects list frame.
         :return: None
         """
-        project = ProjectFrame(self.projects_list_frame.interior)
+        project = ProjectFrame(self.projects_list_frame.interior, self.selected_user_id)
         project.on_remove(lambda: self.remove_project(project))
         self.project_frames_list.append(project)
         self.project_frames_list[-1].pack(padx=4, pady=4)

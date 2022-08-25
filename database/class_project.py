@@ -17,6 +17,8 @@ class ProjectType(Enum):
     Class = 2
     Entrepreneurial = 3
     Business = 4
+    Community = 5
+    WorkStudy = 6
 
 
 class Project:
@@ -89,7 +91,30 @@ class Project:
         sql_load_command = "SELECT * FROM projects WHERE project_id = %s"
         my_cursor.execute(sql_load_command, (project_id,))
         record = my_cursor.fetchone()
-
+        print(record)
         project = Project(record[0], record[1], record[2], ProjectType[record[3]])
 
         return project
+
+    @staticmethod
+    def load_my_projects(database: mysql.connector, user_id: int):
+        my_cursor = database.cursor()
+        sql_load_command = "SELECT DISTINCT projects.project_id, projects.project_name FROM visits_projects " \
+                           "INNER JOIN visits ON visits_projects.visit_id=visits.visit_id " \
+                           "INNER JOIN users ON visits.user_id=users.user_id " \
+                           "INNER JOIN projects ON visits_projects.project_id=projects.project_id " \
+                           "WHERE users.user_id=%s"
+        my_cursor.execute(sql_load_command, (user_id,))
+        # my_cursor.execute(sql_load_command)
+        record_list = my_cursor.fetchall()
+
+        return record_list
+
+    @staticmethod
+    def load_all_projects(database: mysql.connector):
+        my_cursor = database.cursor()
+        sql_load_command = "SELECT project_id, project_name FROM projects"
+        my_cursor.execute(sql_load_command)
+        record_list = my_cursor.fetchall()
+
+        return record_list
