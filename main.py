@@ -10,6 +10,8 @@ from tkinter import font as tkfont
 from database.initialize_database import *
 
 import user_interface.launch_gui
+from reports.pandas_exploration import run_report
+from reports.weekly_report import generate_weekly_report
 
 
 class LoginApplication(tk.Tk):
@@ -41,5 +43,8 @@ if __name__ == "__main__":
     create_materials_table(mydb)
     create_equipment_materials_table(mydb)
     create_materials_consumed_table(mydb)
+    # run_report(mydb)
+    generate_weekly_report(mydb)
+    # Temporarily Turned off for data analysis
     app = LoginApplication()
     app.mainloop()
