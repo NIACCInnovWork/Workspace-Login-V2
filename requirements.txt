@@ -1,0 +1,8 @@
+mysql-connector-python
+Pillow
+
+# Data Analysis and Reporting
+numpy
+pandas
+matplotlib
+fpdf
