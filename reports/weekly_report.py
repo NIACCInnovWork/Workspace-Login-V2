@@ -11,6 +11,8 @@ Need: Need to pull data from both the users and visits tables.
 """
 
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 import mysql.connector
 
 
@@ -21,9 +23,11 @@ def generate_weekly_report(database: mysql.connector):
     :return: None
     """
     df = load_past_week_data(database)
-    print(df['name'].value_counts())  # Get the visit count for all users
-    print(df['end_time'] - df['start_time'])  # Get the total time for each visit
-    df.to_excel('exported/test_excel.xlsx')
+    visits_per_user = df['name'].value_counts()  # Get the visit count for all users
+    total_time_per_visit = df['end_time'] - df['start_time']  # Get the total time for each visit
+    print(visits_per_user)
+    print("Unique Users: " + str(visits_per_user.count()))
+    print(total_time_per_visit)
 
 
 def load_past_week_data(database: mysql.connector):

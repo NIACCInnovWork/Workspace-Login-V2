@@ -1,6 +1,8 @@
 """
 NIACC Innovation Workspace Login V2
 This file begins the exploration into using Pandas to analyze data from the mySQL database backing this application.
+This file was primarily exploratory and will be removed from the final application.
+#ToDo - Remove file from application once it has been checked that it is no longer being used.
 Author: Anthony Riesen
 """
 

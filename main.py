@@ -10,7 +10,10 @@ from tkinter import font as tkfont
 from database.initialize_database import *
 
 import user_interface.launch_gui
+from reports.generate_KPI_report import generate_kpi_report
+from reports.generate_pdf_report import construct_pdf, ReportPDF, generate_full_report
 from reports.pandas_exploration import run_report
+from reports.total_report import generate_total_report
 from reports.weekly_report import generate_weekly_report
 
 
@@ -43,8 +46,10 @@ if __name__ == "__main__":
     create_materials_table(mydb)
     create_equipment_materials_table(mydb)
     create_materials_consumed_table(mydb)
-    # run_report(mydb)
-    generate_weekly_report(mydb)
-    # Temporarily Turned off for data analysis
-    app = LoginApplication()
-    app.mainloop()
+    # run_report(mydb)  # This function is deprecated and going to be removed
+    generate_total_report(mydb)
+    # generate_kpi_report() # This function generates the PDF and is turned off as plots are being developed
+
+    # Temporarily Turned off for data analysis -- Runs main application
+    # app = LoginApplication()
+    # app.mainloop()
