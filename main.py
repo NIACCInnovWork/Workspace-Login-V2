@@ -47,9 +47,9 @@ if __name__ == "__main__":
     create_equipment_materials_table(mydb)
     create_materials_consumed_table(mydb)
     # run_report(mydb)  # This function is deprecated and going to be removed
-    generate_total_report(mydb)
+    # generate_total_report(mydb)
     # generate_kpi_report() # This function generates the PDF and is turned off as plots are being developed
 
     # Temporarily Turned off for data analysis -- Runs main application
-    # app = LoginApplication()
-    # app.mainloop()
+    app = LoginApplication()
+    app.mainloop()
