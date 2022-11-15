@@ -5,7 +5,7 @@ main application.
 
 from fpdf import FPDF
 
-from reports.total_report import generate_total_report
+from reports.figures import FigureService
 
 title = 'Usage Report'
 section_1 = 'Visitor Statistics'
@@ -23,7 +23,7 @@ class PDF(FPDF):
         :return: None
         """
         # logo -- Setting height keeps proportions uniform
-        self.image('resources/Innovation Workspace Logo-Official-scaled.png', 10, 8, 75)
+        self.image('resources/Innovation Workspace Logo-Official-Scaled.png', 10, 8, 75)
         # font
         self.set_font('helvetica', 'B', 20)
         # Title
@@ -65,7 +65,7 @@ class PDF(FPDF):
         self.ln()
 
     # Chapter content
-    def chapter_body(self, name):
+    def chapter_body(self, name, figure):
         """
         This method is used to construct each "chapter" or section in the PDF report. This method will take in a
         description text file followed by a list of graphics and descriptions that comprise the content for the section.
@@ -78,14 +78,14 @@ class PDF(FPDF):
         # Set font
         self.set_font('times', '', 12)
         # insert Section_1_Description.txt
-        self.multi_cell(0, 5, txt, ln=1)
+        self.multi_cell(0, 5, txt, border=1)
         # line break
         self.ln()
 
         # Initially format a single Plot
         image_height = self.h
-        self.image(r"plots\User Type Pie Chart.png", x=10, y=60, w=self.w / 2.5)
-        self.image(r"plots\User_Type_Histogram.png", x=self.w / 2, y=60, w=self.w / 2.5)
+        self.image(str(figure.filepath), x=10, y=60, w=self.w / 2.5)
+        # self.image(r"plots/User_Type_Histogram.png", x=self.w / 2, y=60, w=self.w / 2.5)
 
         self.cell(0, 5, 'Test Adding Additional Text', ln=1)
 
@@ -93,7 +93,7 @@ class PDF(FPDF):
         self.set_font('times', 'I', 12)
         self.cell(0, 5, 'END OF CHAPTER')
 
-    def print_chapter(self, ch_num, ch_title, name, link):
+    def print_chapter(self, ch_num, ch_title, name, link, figure):
         """
         Method that adds a page for the beginning of each chapter, invokes chapter_title method and chapter_body method.
         :param ch_num: Chapter Number (numeral)
@@ -104,43 +104,50 @@ class PDF(FPDF):
         """
         self.add_page()
         self.chapter_title(ch_num, ch_title, link)
-        self.chapter_body(name)
+        self.chapter_body(name, figure)
 
 
-def generate_kpi_report():
 
-    # create FPDF object
-    # Layout ('P','L'); Unit ('mm', 'cm', 'in'); Format ('A3', 'A4' (default), 'A5', 'Letter', (100,150))
-    pdf = PDF('P', 'mm', 'Letter')
-    pdf.set_title(title)
-    pdf.set_author('Anthony Riesen')
+class ReportService():
+    def __init__(self, figure_service: FigureService):
+        self.figure_service = figure_service
 
-    # Links
-    website = 'https://www.niacc.edu'
-    ch1_link = pdf.add_link()
-    ch2_link = pdf.add_link()
+    def generate_kpi_report(self):
 
-    # Get total page numbers
-    pdf.alias_nb_pages()
+        # create FPDF object
+        # Layout ('P','L'); Unit ('mm', 'cm', 'in'); Format ('A3', 'A4' (default), 'A5', 'Letter', (100,150))
+        pdf = PDF('P', 'mm', 'Letter')
+        pdf.set_title(title)
+        pdf.set_author('Anthony Riesen')
 
-    # Set auto page break
-    pdf.set_auto_page_break(auto=True, margin=15)
+        # Links
+        website = 'https://www.niacc.edu'
+        ch1_link = pdf.add_link()
+        ch2_link = pdf.add_link()
 
-    # Add a page
-    pdf.add_page()
-    pdf.image('resources\Business Square.png', x=-1, w=pdf.w + 2)
-    pdf.cell(0, 10, 'Report Generated on 11/6/22', ln=1, align='C')  # ToDo - Format so that it adds the date created
+        # Get total page numbers
+        pdf.alias_nb_pages()
 
-    # Attach Links
-    pdf.cell(0, 10, 'Table of Contents', ln=1)
-    pdf.set_font('helvetica', '', 12)
-    pdf.cell(0, 10, 'NIACC Website', ln=1, link=website)
-    pdf.cell(0, 10, 'Section 1 : ' + section_1, ln=1, link=ch1_link)
-    pdf.cell(0, 10, 'Section 1 : ' + section_2, ln=1, link=ch2_link)
+        # Set auto page break
+        pdf.set_auto_page_break(auto=True, margin=15)
 
-    pdf.set_font('times', '', 16)
+        # Add a page
+        pdf.add_page()
+        pdf.image('resources/Business Square.png', x=-1, w=pdf.w + 2)
+        pdf.cell(0, 10, 'Report Generated on 11/6/22', ln=1, align='C')  # ToDo - Format so that it adds the date created
 
-    pdf.print_chapter(1, section_1, 'resources\\Section_1_Description.txt', ch1_link)
-    pdf.print_chapter(2, section_2, 'resources\\Section_2_Description.txt', ch2_link)
+        # Attach Links
+        pdf.cell(0, 10, 'Table of Contents', ln=1)
+        pdf.set_font('helvetica', '', 12)
+        pdf.cell(0, 10, 'NIACC Website', ln=1, link=website)
+        pdf.cell(0, 10, 'Section 1 : ' + section_1, ln=1, link=ch1_link)
+        pdf.cell(0, 10, 'Section 1 : ' + section_2, ln=1, link=ch2_link)
 
-    pdf.output('exported_reports\Workspace Report.pdf')  # ToDo - Format so that the filename includes date created
+        pdf.set_font('times', '', 16)
+
+        pdf.print_chapter(1, section_1, 'resources/Section_1_Description.txt', ch1_link, self.figure_service.create_user_type_pie_chart())
+        pdf.print_chapter(2, section_2, 'resources/Section_2_Description.txt', ch2_link, self.figure_service.create_user_type_histogram())
+        pdf.print_chapter(2, section_2, 'resources/Section_2_Description.txt', ch2_link, self.figure_service.create_visit_heat_map())
+
+        pdf.output('exported_reports/Workspace Report.pdf')  # ToDo - Format so that the filename includes date created
+
