@@ -4,7 +4,7 @@ from typing import Callable
 
 from database.class_equipment import Equipment
 from database.class_material import Material
-from database.class_project import Project, ProjectType
+from database import User, Project, ProjectType
 from database.initialize_database import start_workspace_database
 from user_interface.ScrollingListFrame import ScrollingListFrame
 from user_interface.find_project_window import FindProjectWindow
@@ -13,11 +13,15 @@ from user_interface.find_project_window import FindProjectWindow
 class ProjectFrame(tk.LabelFrame):
     # @Todo - Need to handle default values in some way
 
-    def __init__(self, parent, user_id):
+    def __init__(self, parent, user: User):
         tk.LabelFrame.__init__(self, parent)
         self.parent = parent
-        self.user_id = user_id
-        self.selected_project = Project.factory("", "", ProjectType["Personal"])  # Create empty Project for selecting
+        self.user = user
+        # Create empty Project for selecting
+
+        # TODO get rid of partially initialized object.
+        # self.selected_project = Project.factory("", "", ProjectType["Personal"])  
+        self.selected_project = Project(None, "", "", ProjectType["Personal"])  
 
         self.on_remove_callback = None
 
@@ -72,7 +76,7 @@ class ProjectFrame(tk.LabelFrame):
 
     def find_project(self):
         # Toplevel object which will be treated as a new window
-        find_project_window = FindProjectWindow(self, self.user_id)
+        find_project_window = FindProjectWindow(self, self.user)
 
     def set_selected_project_info(self):
         self.project_name_variable.set(self.selected_project.project_name)

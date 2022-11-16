@@ -12,7 +12,7 @@ import tkinter.messagebox
 import user_interface.sign_in_window
 import user_interface.new_user_window
 import user_interface.sign_out_window
-from database.class_visit import Visit
+from database import UserRepository, Visit, VisitRepository
 from database.initialize_database import *
 
 
@@ -29,8 +29,9 @@ class MainPage(tk.Frame):
         logged_in_frame = tk.LabelFrame(self, text="Logged In")
 
         # Pull Data
-        database = start_workspace_database()
-        self.users_logged_in = Visit.get_logged_in_users(database)
+        self.database = start_workspace_database()
+        visit_repo = VisitRepository(self.database)
+        self.users_logged_in = visit_repo.get_logged_in_users()
 
         # Create listbox & scrollbar
         scrollbar = tk.Scrollbar(logged_in_frame, orient="vertical")
@@ -96,10 +97,14 @@ class MainPage(tk.Frame):
             print(index)
             selected_name = self.logged_in_listbox.get(index)
             selected_id = self.users_logged_in[index[0]][1]
+
+            # TODO temporary to get this working with the UI again
+            selected_user = UserRepository(self.database).load(selected_id)
+
             # print(selected_name)
             self.destroy()
             # user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_name)
-            user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_id)
+            user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_user)
         except tk.TclError:
             tk.messagebox.showwarning("Select User", "You need to select your name from the list of logged in users!")
 

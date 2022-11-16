@@ -6,14 +6,15 @@ Author: Anthony Riesen
 """
 import tkinter.messagebox
 
-from database.class_visit import Visit
+from database.class_visit import Visit, VisitRepository
 from database.initialize_database import start_workspace_database
 
 
 def create_visit_from_ui(user_id: int):
     database = start_workspace_database()
+    visit_repo = VisitRepository(database)
     try:
-        visit = Visit.check_logged_in(database, user_id)
+        visit = visit_repo.check_logged_in(user_id)
     except TypeError:
         visit = Visit.create(database, user_id)
         tkinter.messagebox.showinfo("Logged In!",

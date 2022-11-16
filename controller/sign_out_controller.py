@@ -4,11 +4,12 @@ This file defines the controller that controls how the Sign Out Window interacts
 data from the database when opened and saves data to the database when closed.
 Author: Anthony Riesen
 """
+from database import User, UserRepository
+from database import Visit, VisitRepository
+
 from database.class_equipment_material import EquipmentMaterial
 from database.class_logout_composite import SignOutComposite
 from database.class_project import Project, ProjectType
-from database.class_user import User
-from database.class_visit import Visit
 from database.class_visit_project import VisitProject
 from database.initialize_database import start_workspace_database
 import tkinter.messagebox
@@ -25,8 +26,11 @@ def load_visit_data(user_id: int):
     :return: (User Name, User Type, Visit Start Time, Visit ID)
     """
     database = start_workspace_database()
-    user = User.load(database, user_id)  # This is simply used the get the user_id, may not be needed
-    visit = Visit.check_logged_in(database, user_id)
+    user_repo = UserRepository(database)
+    visit_repo = VisitRepository(database)
+
+    user = user_repo.load(user_id)  # This is simply used the get the user_id, may not be needed
+    visit = visit_repo.check_logged_in(user_id)
 
     visit_data = (user.name, user.user_type, visit.start_time, visit.visit_id)
     return visit_data

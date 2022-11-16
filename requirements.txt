@@ -7,3 +7,6 @@ numpy
 pandas
 matplotlib
 fpdf
+
+# Dependencies for generating test db
+faker

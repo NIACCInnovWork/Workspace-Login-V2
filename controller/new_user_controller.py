@@ -6,9 +6,7 @@ Author: Anthony Riesen
 """
 import tkinter.messagebox
 
-from database.class_user import User
-from database.class_user import UserType
-from database.class_visit import Visit
+from database import User, UserType, UserRepository, Visit, VisitRepository
 from database.initialize_database import start_workspace_database
 
 
@@ -21,14 +19,16 @@ def create_user_from_ui(name: str, user_type: str):
     :return: none
     """
     database = start_workspace_database()
+    user_repo = UserRepository(database)
+    visit_repo = VisitRepository(database)
     print(name, user_type)
 
     try:
-        user = User.load_by_name(database, name)  # If the name doesn't have to be unique, this could be eliminated
+        user = user_repo.load_by_name(name)  # If the name doesn't have to be unique, this could be eliminated
         # user = User.load(database, user_id)
     except TypeError:
-        user = User.create(database, name, UserType[user_type])
-        visit = Visit.create(database, user.user_id)
+        user = user_repo.create(name, UserType[user_type])
+        visit = visit_repo.create_for(user)
         tkinter.messagebox.showinfo("Member Created!",
                                     "Your new member has been created and you've been logged in for your first visit!")
     else:

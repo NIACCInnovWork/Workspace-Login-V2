@@ -19,7 +19,7 @@ def create_workspace_database():
         passwd=database_password()  # , Database Password saved in config file (not on git)
     )
     my_cursor = mydb.cursor()
-    my_cursor.execute("CREATE DATABASE IF NOT EXISTS workspace_login_data")
+    my_cursor.execute("CREATE DATABASE IF NOT EXISTS workspace_login_data;")
 
 
 # Connect to Existing Database

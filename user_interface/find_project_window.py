@@ -8,22 +8,23 @@ Author: Anthony Riesen
 import tkinter as tk
 from tkinter import font as tkfont
 
-from database.class_project import Project, ProjectType
+from database import User, Project, ProjectType, ProjectRepository
 from database.initialize_database import start_workspace_database
 
 
 class FindProjectWindow(tk.Toplevel):
 
-    def __init__(self, parent, user_id):
+    def __init__(self, parent, user: User):
         tk.Toplevel.__init__(self, parent)
         self.parent = parent
-        self.user_id = user_id
+        self.user = user
 
         self.title("Find Existing Project")
         title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
         # Start Database Connection
         self.database = start_workspace_database()
+        self.project_repo = ProjectRepository(self.database)
 
         label = tk.Label(self, text="Find Your Project", font=title_font)
         project_frame = tk.LabelFrame(self, text="Your Projects")
@@ -39,7 +40,8 @@ class FindProjectWindow(tk.Toplevel):
 
         # Populate listbox
         self.project_list = []
-        self.selected_project = Project.factory("", "", ProjectType["Personal"])
+        # TODO remove partially hydrated object
+        self.selected_project = Project(None, "", "", ProjectType["Personal"])
         self.load_my_projects()
 
         # Create Project Info Frame
@@ -82,7 +84,7 @@ class FindProjectWindow(tk.Toplevel):
             if selection:
                 index = selection[0]
                 selected_project_id = self.project_list[index][0]
-                self.selected_project = Project.load(self.database, selected_project_id)
+                self.selected_project = self.project_repo.load(selected_project_id)
                 project_name_info_label.configure(text=self.selected_project.project_name, anchor=tk.W)
                 project_description_info_label.configure(text=self.selected_project.project_description, anchor=tk.W)
                 project_type_info_label.configure(text=self.selected_project.project_type, anchor=tk.W)
@@ -94,12 +96,12 @@ class FindProjectWindow(tk.Toplevel):
         self.project_list_box.bind("<<ListboxSelect>>", callback)
 
     def load_my_projects(self):
-        self.project_list = Project.load_my_projects(self.database, self.user_id)
+        self.project_list = self.project_repo.load_for(self.user)
         for project in self.project_list:
             self.project_list_box.insert(self.project_list.index(project), project[1])
 
     def load_all_projects(self):
-        self.project_list = Project.load_all_projects(self.database)
+        self.project_list = self.project_repo.load_all_projects()
         for project in self.project_list:
             self.project_list_box.insert(self.project_list.index(project), project[1])
 

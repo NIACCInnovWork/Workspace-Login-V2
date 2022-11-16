@@ -3,9 +3,11 @@ NIACC Innovation Workspace Login V2
 This file defines the 'Visit' class
 Author: Anthony Riesen
 """
-import datetime
+import datetime as dt
 
-import mysql.connector
+from mysql.connector import MySQLConnection
+from database.class_user import User
+from typing import Optional
 
 
 class Visit:
@@ -13,8 +15,7 @@ class Visit:
     Class that defines the data structure of the visit object
     """
 
-    def __init__(self, visit_id: int, user_id: int, start_time: datetime.datetime.timestamp,
-                 end_time: datetime.datetime.timestamp):
+    def __init__(self, visit_id: int, user_id: int, start_time: dt.datetime, end_time: Optional[dt.datetime]):
         """
         Constructor for the 'visit' object
         @Todo Determine if visit_category is needed, if it is a string, or if it is a enum
@@ -36,59 +37,57 @@ class Visit:
         return f"Visit: visit_id: {self.visit_id}, user_id: {self.user_id}, start_time: {self.start_time}, " \
                f"end_time: {self.end_time}"
 
-    @staticmethod
-    def create(database: mysql.connector, user_id: int):
+class VisitRepository:
+    def __init__(self, conn: MySQLConnection):
+        self.conn = conn
+
+    def create_for(self, user: User):
         """
         Method to create a new visit in the database. Static method so that it can be called independent of a specific
         object.  Calls out to the 'load' method after creating the visit in the database.
+
         :param database: Workspace Login Database in which the visit is added
         :param user_id: Primary Key of the user who created this visit
         :return: Visit object of the visit just added to the database
         """
-        start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        my_cursor = database.cursor()
+        start_time = dt.datetime.now()
+        curr = self.conn.cursor()
         sql_create_command = "INSERT INTO visits (user_id, start_time) VALUES (%s, %s)"
-        select_data = (user_id, start_time)
-        my_cursor.execute(sql_create_command, select_data)
-        database.commit()
+        curr.execute(sql_create_command, (user.user_id, start_time))
+        self.conn.commit()
+        curr.close()
+        return Visit(curr.lastrowid, user.user_id, start_time, None)
 
-        return Visit.load_after_create(database, start_time)
-
-    @staticmethod
-    def load_after_create(database: mysql.connector, start_time: datetime.datetime.timestamp):
+    def load_after_create(self, start_time: dt.datetime):
         """
         Method to load the visit from the database which was just added by the create method.  Because the database
         generates the visit_id and a user_id will be associated with multiple visits, this method uses the start_time
         timestamp as a unique identifier for loading in the visit record.
-        @Todo Check with Jacob/Nicholas to see if this should be combined with the load method or handled differently
-        :param database: Workspace Login Database from which the visit is loaded
+
         :param start_time: Timestamp generated on the creation of the visit
         :return: Visit object with the timestamp requested
         """
-        my_cursor = database.cursor()
-        sql_load_command = "SELECT * FROM visits WHERE start_time = %s"
-        my_cursor.execute(sql_load_command, (start_time,))
-        record = my_cursor.fetchone()
-
+        curr = self.conn.cursor()
+        sql_load_command = "SELECT * FROM visits WHERE start_time = %s;"
+        curr.execute(sql_load_command, (start_time,))
+        record = curr.fetchone()
+        print("Visit: ", record)
         # I suspect this will currently will throw an error because timestamp (record[3]) cannot be null
-        visit = Visit(record[0], record[1], record[2], record[3])
+        return Visit(record[0], record[1], record[2], record[3])
 
-        print(visit)
-        return visit
-
-    @staticmethod
-    def load_by_user_name(database: mysql.connector, user_name: str):
+    def load_by_user(self, user: User):
         """
         This method allows the loading of a particular visit by the user's name.
-        :param database: Workspace Login Database from which the visit is loaded
+
         :param user_name: Username of the visit to be loaded
         :return: Visit object with the timestamp requested
         """
-        my_cursor = database.cursor()
+        curr = self.conn.cursor()
         sql_load_command = "SELECT * FROM users JOIN visits ON users.user_id = visits.user_id " \
-                           "WHERE users.name = %s AND visits.end_time IS NULL"
-        my_cursor.execute(sql_load_command, (user_name,))
-        record = my_cursor.fetchone()
+                           "WHERE users.user_id = %s AND visits.end_time IS NULL"
+        curr.execute(sql_load_command, (user.user_id,))
+        record = curr.fetchone()
+        curr.close()
 
         # I suspect this will currently will throw an error because timestamp (record[3]) cannot be null
         visit = Visit(record[4], record[5], record[6], record[7])
@@ -96,14 +95,13 @@ class Visit:
         print(visit)
         return visit
 
-    @staticmethod
-    def get_logged_in_users(database: mysql.connector):
+    def get_logged_in_users(self):
         """
         Class that queries the database for users which are currently logged in.
-        :param database: Workspace Login Database from which the visits and users are loaded
+
         :return: List of names of the members who have a visit with no logout timestamp
         """
-        my_cursor = database.cursor()
+        my_cursor = self.conn.cursor()
         sql_logged_in_users_command = "SELECT users.name, users.user_id FROM users JOIN visits ON " \
                                       "users.user_id = visits.user_id WHERE visits.end_time IS NULL"
         my_cursor.execute(sql_logged_in_users_command)
@@ -111,15 +109,14 @@ class Visit:
 
         return logged_in_users
 
-    @staticmethod
-    def check_logged_in(database: mysql.connector, user_id: int):
+    def check_logged_in(self, user_id: int):
         """
         Load the visit from the database with the given user_id and no end_time.
-        :param database: Database connection from which the data will be pulled.
+        
         :param user_id: Integer user_id foreign key for the visit.
         :return: None
         """
-        my_cursor = database.cursor()
+        my_cursor = self.conn.cursor()
         sql_logged_in_command = "SELECT * FROM visits WHERE user_id = %s AND end_time IS NULL"
         my_cursor.execute(sql_logged_in_command, (user_id,))
         record = my_cursor.fetchone()
@@ -127,16 +124,16 @@ class Visit:
 
         return visit
 
-    @staticmethod
-    def sign_out_visit(database: mysql.connector, visit_id: int):
+    def sign_out_visit(self, visit_id: int):
         """
         Sign out from the visit database with the current time on sign-out.
-        :param database: Database with the visit to be updated.
+
         :param visit_id: Primary key of the visit to be updated.
         :return: None
         """
-        my_cursor = database.cursor()
-        end_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        my_cursor = self.conn.cursor()
+        end_time = dt.datetime.now()
         sql_logged_out_command = "UPDATE visits SET end_time = %s WHERE visit_id = %s "
         my_cursor.execute(sql_logged_out_command, (end_time, visit_id))
-        database.commit()
+        self.conn.commit()
+
