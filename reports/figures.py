@@ -31,6 +31,8 @@ class FigureService:
     All data is currently based off of "visit data" within the database. Visit data is aquired
     with the sql query
     """
+    USER_QUERY = "SELECT user_id, date_joined, name, user_type FROM users;"
+    USER_COLUMNS = ["user_id", "date_joined", "name", "user_type"]
 
     VISIT_QUERY = "SELECT    " \
        "     users.user_id,  " \
@@ -48,6 +50,19 @@ class FigureService:
     def __init__(self, conn: MySQLConnection):
         self.conn = conn
 
+    def _load_all_user_data(self) -> pd.DataFrame:
+        """
+        Load in the user and visit data
+        :param database: Database from which the data are pulled.
+        :return: Python Pandas Dataframe with data.
+        """
+        my_cursor = self.conn.cursor()
+        my_cursor.execute(self.USER_QUERY)
+        df = pd.DataFrame(my_cursor.fetchall(), columns=self.USER_COLUMNS)
+        my_cursor.close()
+
+        return df
+
     def _load_all_visit_data(self) -> pd.DataFrame:
         """
         Load in the user and visit data
@@ -62,6 +77,22 @@ class FigureService:
 
         return df
 
+    def fetch_total_number_of_users(self) -> int:
+        curr = self.conn.cursor()
+        curr.execute("SELECT count(*) FROM users;");
+        result = curr.fetchone()[0]
+        curr.close()
+        return result
+        
+
+    def fetch_average_number_of_visits_per_user(self) -> float:
+        curr = self.conn.cursor()
+        curr.execute("SELECT avg(c) FROM (SELECT count(*) AS c FROM visits GROUP BY user_id) AS visit_count;");
+        result = curr.fetchone()[0]
+        curr.close()
+        return result
+
+
     def create_user_type_histogram(self, df: Optional[pd.DataFrame] = None) -> Figure:
         """
         Creates a histogram of user types
@@ -71,7 +102,7 @@ class FigureService:
         :return: Figure containg path to the generated file
         """
         if df is None:
-            df = self._load_all_visit_data()
+            df = self._load_all_user_data()
         figure = Figure(Path(tempfile.gettempdir()) / 'User_Type_Histogram.png')
 
         plt.hist(df['user_type'])
@@ -93,7 +124,7 @@ class FigureService:
         :return: Saves figure, no return value
         """
         if df is None:
-            df = self._load_all_visit_data()
+            df = self._load_all_user_data()
         figure = Figure(Path(tempfile.gettempdir()) / 'User Type Pie Chart.png')
 
         df = df.groupby(df.user_type).user_type.count()
@@ -149,10 +180,15 @@ class FigureService:
         :param df: Dataframe containing User and Visit Data
         :return: Saves Figure, no returned value
         """
+        figure = Figure(Path(tempfile.gettempdir()) / 'VisitsOverTime.png')
+        if df is None:
+            df = self._load_all_visit_data()
         # Create new DataFrame with start_time and user_type only (Note: Start Time is never null)
-        type_data_analyzed = pd.DataFrame({'start_time': df['start_time'],
-                                           'end_time': df['end_time'],
-                                           'user_type': df['user_type']})
+        type_data_analyzed = pd.DataFrame({
+            'start_time': df['start_time'],
+            'end_time': df['end_time'],
+            'user_type': df['user_type']
+        })
         type_data_analyzed['total_time'] = df['end_time'] - df['start_time']
         # Add a new row that contains the week and year
         type_data_analyzed['Year/Month/Day'] = type_data_analyzed['start_time'].apply(lambda x: x.date())
@@ -168,7 +204,8 @@ class FigureService:
         plt.subplot(4, 1, 4)
         self._plot_users_over_type(min_date, max_date, type_data_analyzed, "Community Member", ["Community_Member"])
         plt.tight_layout()
-        plt.savefig('plots/Users Over Time.png', dpi=300, bbox_inches='tight', pad_inches=0.1)
+        plt.savefig(figure.filepath, dpi=300, bbox_inches='tight', pad_inches=0.1)
+        return figure
         # plt.show()
 
     def create_visit_heat_map(self, df: Optional[pd.DataFrame] = None) -> Figure:
