@@ -1,5 +1,6 @@
 mysql-connector-python
 Pillow
+flask
 
 # Data Analysis and Reporting
 numpy

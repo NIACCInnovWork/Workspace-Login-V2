@@ -98,6 +98,8 @@ class User:
         sql_load_command = "SELECT * FROM users WHERE user_id = %s"
         my_cursor.execute(sql_load_command, (user_id,))
         record = my_cursor.fetchone()
+        if record is None:
+            return None
         user = User(record[0], record[1], record[2], UserType[record[3]])
 
         return user
