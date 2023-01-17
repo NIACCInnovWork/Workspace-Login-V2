@@ -3,6 +3,7 @@ from flask import Flask
 from database.class_user import User
 from database.initialize_database import start_workspace_database
 import json
+
 app = Flask(__name__)
 
 

@@ -5,7 +5,7 @@ Author: Anthony Riesen
 """
 
 import mysql.connector
-from config import database_password
+from config import database_host, database_password
 
 
 def create_workspace_database():
@@ -14,7 +14,7 @@ def create_workspace_database():
     :return: none.
     """
     mydb = mysql.connector.connect(
-        host="localhost",  # Location of Database
+        host=database_host(),  # Location of Database
         user="root",  # Database User
         passwd=database_password()  # , Database Password saved in config file (not on git)
     )
@@ -29,7 +29,7 @@ def start_workspace_database():
     :return: database object
     """
     mydb = mysql.connector.connect(
-        host="localhost",  # Location of Database
+        host=database_host(),  # Location of Database
         user="root",  # Database User
         passwd=database_password(),  # Database Password saved in config file (not on git)
         database="workspace_login_data"
@@ -61,7 +61,7 @@ def create_visits_table(database):
     my_cursor = database.cursor()
     my_cursor.execute("CREATE TABLE IF NOT EXISTS visits ("
                       "visit_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
-                      "user_id INTEGER, FOREIGN KEY(user_id) REFERENCES Users(user_id), "
+                      "user_id INTEGER, FOREIGN KEY(user_id) REFERENCES users(user_id), "
                       "start_time DATETIME, "
                       "end_time DATETIME"
                       ")")
@@ -95,8 +95,8 @@ def create_visits_projects_table(database):
     my_cursor = database.cursor()
     my_cursor.execute("CREATE TABLE IF NOT EXISTS visits_projects ("
                       "visit_project_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
-                      "visit_id INTEGER, FOREIGN KEY(visit_id) REFERENCES Visits(visit_id),"
-                      "project_id INTEGER, FOREIGN KEY(project_id) REFERENCES Projects(project_id)"
+                      "visit_id INTEGER, FOREIGN KEY(visit_id) REFERENCES visits(visit_id),"
+                      "project_id INTEGER, FOREIGN KEY(project_id) REFERENCES projects(project_id)"
                       ")")
 
 
@@ -112,7 +112,7 @@ def create_usage_log_table(database):
     my_cursor.execute("CREATE TABLE IF NOT EXISTS usage_log ("
                       "usage_log_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
                       "visit_project_id INTEGER, FOREIGN KEY(visit_project_id) "
-                      "REFERENCES Visits_Projects(visit_project_id),"  # Continuation of visit_project_id
+                      "REFERENCES visits_projects(visit_project_id),"  # Continuation of visit_project_id
                       "time_used INTEGER"  # Length of time equipment was used stored in seconds
                       ")")
 
@@ -163,8 +163,8 @@ def create_equipment_materials_table(database):
     my_cursor = database.cursor()
     my_cursor.execute("CREATE TABLE IF NOT EXISTS equipment_materials ("
                       "equipment_material_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
-                      "equipment_id INTEGER, FOREIGN KEY(equipment_id) REFERENCES Equipment(equipment_id),"
-                      "material_id INTEGER, FOREIGN KEY(material_id) REFERENCES Materials(material_id)"
+                      "equipment_id INTEGER, FOREIGN KEY(equipment_id) REFERENCES equipment(equipment_id),"
+                      "material_id INTEGER, FOREIGN KEY(material_id) REFERENCES materials(material_id)"
                       ")")
 
 
@@ -174,7 +174,7 @@ def create_materials_consumed_table(database):
     my_cursor.execute("CREATE TABLE IF NOT EXISTS materials_consumed ("
                       "materials_consumed_id INTEGER AUTO_INCREMENT PRIMARY KEY,"
                       "equipment_material_id INTEGER, FOREIGN KEY(equipment_material_id) "
-                      "REFERENCES Equipment_Materials(equipment_material_id),"  # continuation of foreign key statement
-                      "usage_log_id INTEGER, FOREIGN KEY(usage_log_id) REFERENCES Usage_log(usage_log_id),"
+                      "REFERENCES equipment_materials(equipment_material_id),"  # continuation of foreign key statement
+                      "usage_log_id INTEGER, FOREIGN KEY(usage_log_id) REFERENCES usage_log(usage_log_id),"
                       "amount_consumed INTEGER"  
                       ")")
