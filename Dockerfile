@@ -24,9 +24,9 @@ COPY main.py .
 COPY report_cli.py .
 COPY reports reports/
 COPY resources resources/
-COPY server.py .
 COPY templates templates/
-COPY user_interface user_interface
+COPY user_interface user_interface/
+COPY flaskr flaskr/
 
 # Launch the login application within gunicorn
-ENTRYPOINT [".local/bin/gunicorn", "--workers=4", "--bind=0.0.0.0:8000", "--access-logfile=-", "server:app"]
+ENTRYPOINT [".local/bin/gunicorn", "--workers=4", "--bind=0.0.0.0:8000", "--access-logfile=-", "flaskr:create_app()"]
