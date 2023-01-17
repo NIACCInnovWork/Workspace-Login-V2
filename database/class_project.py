@@ -9,6 +9,8 @@ from enum import Enum
 from mysql.connector import MySQLConnection
 from database.class_user import User
 
+from typing import List
+
 class ProjectType(Enum):
     """
     Enum that defines the possible project types.
@@ -49,6 +51,14 @@ class Project:
     def __str__(self):
         return f"Project: projectID: {self.project_id}, Name: {self.project_name}," \
                f"Project Description: {self.project_description}, Project Type: {self.project_type}"
+
+
+class ProjectSummary:
+    """ Sub set of the attributes specified on the Project class
+    """
+    def __init__(self, id: int, name: str):
+        self.id=id
+        self.name=name
 
 class ProjectRepository:
     def __init__(self, conn: MySQLConnection):
@@ -108,11 +118,11 @@ class ProjectRepository:
 
         return record_list
 
-    def load_all_projects(self):
+    def load_all_projects(self) -> List[ProjectSummary]:
         my_cursor = self.conn.cursor()
         sql_load_command = "SELECT project_id, project_name FROM projects"
         my_cursor.execute(sql_load_command)
         record_list = my_cursor.fetchall()
-
-        return record_list
+        
+        return [ProjectSummary(rec[0], rec[1]) for rec in record_list]
 

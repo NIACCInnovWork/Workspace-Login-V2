@@ -7,6 +7,7 @@ Author: Anthony Riesen
 from enum import Enum
 import datetime as dt
 import mysql.connector
+from typing import List
 
 
 class UserType(Enum):
@@ -61,6 +62,10 @@ class User:
         return f"User: userID: {self.user_id}, name: {self.name}, " \
                f"timeStamp: {self.date_joined}, userType: {self.user_type}"
 
+class UserSummary:
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
 
 class UserRepository:
     def __init__(self, conn: mysql.connector.MySQLConnection):
@@ -83,6 +88,11 @@ class UserRepository:
         curr.close()
 
         return User(curr.lastrowid, date_joined, name, user_type)
+
+    def update(self, user: User):
+        curr = self.conn.cursor()
+        curr.execute("UPDATE users SET name = %s, user_type = %s WHERE user_id = %s", (user.name, user.user_type.name, user.user_id))
+        self.conn.commit()
 
     def load_by_name(self, name: str):
         """
@@ -119,16 +129,16 @@ class UserRepository:
 
         return user
 
-    def get_all_visitors(self):
+    def get_all_visitors(self) -> List[UserSummary]:
         """
         Method to select all visitors from the database.
         :param database: Workspace Login Database from which the user is loaded
         :return: List of users and user_ids
         """
         my_cursor = self.conn.cursor()
-        sql_load_names_command = "SELECT name, user_id FROM users"
+        sql_load_names_command = "SELECT user_id, name FROM users"
         my_cursor.execute(sql_load_names_command)
 
-        return my_cursor.fetchall()
+        return [UserSummary(rec[0], rec[1]) for rec in my_cursor.fetchall()]
 
 
