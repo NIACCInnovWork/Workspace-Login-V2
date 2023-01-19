@@ -5,18 +5,20 @@ from typing import Callable
 from database.class_equipment import Equipment
 from database.class_material import Material
 from database import User, Project, ProjectType
-from database.initialize_database import start_workspace_database
 from user_interface.ScrollingListFrame import ScrollingListFrame
 from user_interface.find_project_window import FindProjectWindow
+
+from client import ApiClient
 
 
 class ProjectFrame(tk.LabelFrame):
     # @Todo - Need to handle default values in some way
 
-    def __init__(self, parent, user: User):
+    def __init__(self, parent, user: User, api_client: ApiClient):
         tk.LabelFrame.__init__(self, parent)
         self.parent = parent
         self.user = user
+        self.api_client = api_client
         # Create empty Project for selecting
 
         # TODO get rid of partially initialized object.
@@ -69,14 +71,14 @@ class ProjectFrame(tk.LabelFrame):
         Dynamically adds equipment frames to the UI so projects can have multiple pieces of equipment used.
         :return: none
         """
-        equipment = EquipmentFrame(self.equipment_list_frame.interior)
+        equipment = EquipmentFrame(self.equipment_list_frame.interior, self.api_client)
         equipment.on_remove(lambda: self.remove_equipment(equipment))
         self.equipment_frames_list.append(equipment)
         self.equipment_frames_list[-1].pack(padx=4, pady=4)
 
     def find_project(self):
         # Toplevel object which will be treated as a new window
-        find_project_window = FindProjectWindow(self, self.user)
+        find_project_window = FindProjectWindow(self, self.user, self.api_client)
 
     def set_selected_project_info(self):
         self.project_name_variable.set(self.selected_project.project_name)
@@ -102,31 +104,33 @@ class ProjectFrame(tk.LabelFrame):
 
 class EquipmentFrame(tk.Frame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, api_client: ApiClient):
         """
         Frame containing all the fields needed for the Equipment Record Object.
         :param parent: Parent widget in which this frame is placed
         """
         tk.Frame.__init__(self, parent)
+        self.api_client = api_client
 
         self.on_remove_callback = None
 
         def set_materials(event):
             equipment_name = event.widget.get()
             equipment_index = self.equipment_names.index(equipment_name)
-            self.material_names_ids = Material.get_material_names_for_equipment(database,
-                                                                                self.equipment_names_ids[
-                                                                                    equipment_index][1])
-            self.material_list = []
-            for material in self.material_names_ids:
-                self.material_list.append(material[0])
+            self.material_names_ids = self.api_client.get_materials_for(self.equipment_names_ids[equipment_index])
+            # self.material_names_ids = Material.get_material_names_for_equipment(database,
+            #                                                                     self.equipment_names_ids[
+            #                                                                         equipment_index][1])
+            self.material_list = [mat.material_name for mat in self.material_names_ids]
+            # for material in self.material_names_ids:
+            #     self.material_list.append(material[0])
 
             self.material_used['values'] = self.material_list
 
         def set_unit(event):
             material_name = event.widget.get()
             index = self.material_list.index(material_name)
-            material_unit = Material.get_unit(database, self.material_names_ids[index][1])
+            material_unit = self.material_names_ids[index].unit
             self.amount_used_unit.config(text=material_unit)
 
         # Data Validation to ensure time and amount entries are integers only
@@ -138,14 +142,12 @@ class EquipmentFrame(tk.Frame):
 
         validate_command = (self.register(validate_int))
 
-        database = start_workspace_database()
+        # database = start_workspace_database()
 
         equipment_label = tk.Label(self, text="Equipment: ")
 
-        self.equipment_names_ids = Equipment.get_all_equipment_names(database)
-        self.equipment_names = []
-        for equipment in self.equipment_names_ids:
-            self.equipment_names.append(equipment[0])
+        self.equipment_names_ids = self.api_client.get_equipment() # Equipment.get_all_equipment_names(database)
+        self.equipment_names = [ eq.equipment_name for eq in self.equipment_names_ids ]
 
         self.equipment_variable = tk.StringVar(self)
         self.equipment = ttk.Combobox(self, textvariable=self.equipment_variable)

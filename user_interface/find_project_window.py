@@ -9,22 +9,25 @@ import tkinter as tk
 from tkinter import font as tkfont
 
 from database import User, Project, ProjectType, ProjectRepository
-from database.initialize_database import start_workspace_database
+# from database.initialize_database import start_workspace_database
+
+from client import ApiClient
 
 
 class FindProjectWindow(tk.Toplevel):
 
-    def __init__(self, parent, user: User):
+    def __init__(self, parent, user: User, api_client: ApiClient):
         tk.Toplevel.__init__(self, parent)
         self.parent = parent
         self.user = user
+        self.api_client = api_client
 
         self.title("Find Existing Project")
         title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
         # Start Database Connection
-        self.database = start_workspace_database()
-        self.project_repo = ProjectRepository(self.database)
+        # self.database = start_workspace_database()
+        # self.project_repo = ProjectRepository(None)
 
         label = tk.Label(self, text="Find Your Project", font=title_font)
         project_frame = tk.LabelFrame(self, text="Your Projects")
@@ -83,8 +86,8 @@ class FindProjectWindow(tk.Toplevel):
             selection = event.widget.curselection()
             if selection:
                 index = selection[0]
-                selected_project_id = self.project_list[index][0]
-                self.selected_project = self.project_repo.load(selected_project_id)
+                selected_project_id = self.project_list[index].id
+                self.selected_project = self.api_client.get_project(selected_project_id)   # self.project_repo.load(selected_project_id)
                 project_name_info_label.configure(text=self.selected_project.project_name, anchor=tk.W)
                 project_description_info_label.configure(text=self.selected_project.project_description, anchor=tk.W)
                 project_type_info_label.configure(text=self.selected_project.project_type, anchor=tk.W)
@@ -96,14 +99,14 @@ class FindProjectWindow(tk.Toplevel):
         self.project_list_box.bind("<<ListboxSelect>>", callback)
 
     def load_my_projects(self):
-        self.project_list = self.project_repo.load_for(self.user)
+        self.project_list = self.api_client.get_projects_for(self.user)
         for project in self.project_list:
             self.project_list_box.insert(self.project_list.index(project), project[1])
 
     def load_all_projects(self):
-        self.project_list = self.project_repo.load_all_projects()
-        for project in self.project_list:
-            self.project_list_box.insert(self.project_list.index(project), project[1])
+        self.project_list = self.api_client.get_projects()
+        for index, project in enumerate(self.project_list):
+            self.project_list_box.insert(index, project.name)
 
     def return_selected_project(self):
         print(self.selected_project)

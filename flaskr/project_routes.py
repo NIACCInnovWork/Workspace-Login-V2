@@ -33,5 +33,5 @@ def get_project(project_id):
         "id": project.project_id,
         "name": project.project_name,
         "description": project.project_description,
-        "type": str(project.project_type),
+        "type": project.project_type.name,
     }

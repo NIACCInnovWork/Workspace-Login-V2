@@ -7,16 +7,19 @@ Author: Anthony Riesen
 import tkinter.messagebox
 
 from database.class_visit import Visit, VisitRepository
-from database.initialize_database import start_workspace_database
+# from database.initialize_database import start_workspace_database
 
+from client import ApiClient
 
-def create_visit_from_ui(user_id: int):
-    database = start_workspace_database()
-    visit_repo = VisitRepository(database)
-    try:
-        visit = visit_repo.check_logged_in(user_id)
-    except TypeError:
-        visit = Visit.create(database, user_id)
+def create_visit_from_ui(api_client: ApiClient, user_id: int):
+    # database = start_workspace_database()
+    # visit_repo = VisitRepository(database)
+    user = api_client.get_user(user_id)
+    ongoing_visits = api_client.get_visits_for(user, ongoing=True)
+
+    if not ongoing_visits:
+        # visit = Visit.create(database, user_id)
+        visit = api_client.create_visit_for(user)
         tkinter.messagebox.showinfo("Logged In!",
                                     "You are all logged in and good to go!")
     else:

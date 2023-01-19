@@ -1,36 +1,39 @@
 import tkinter as tk
 import datetime as dt
 
-import database.initialize_database
+# import database.initialize_database
 import user_interface.launch_gui
 from controller.sign_out_controller import load_visit_data, signout_from_ui
 from user_interface.ScrollingListFrame import ScrollingListFrame
 from user_interface.project_frame import ProjectFrame
+from database.class_user import User
 
+from client import ApiClient
 
 class SignOutPage(tk.Frame):
 
-    def __init__(self, parent, controller, selected_user):
+    def __init__(self, parent, controller, api_client: ApiClient, selected_user: User):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.controller = controller
+        self.api_client = api_client
         self.selected_user = selected_user
 
         # Pull Data from Database
-        self.visit_data = load_visit_data(self.selected_user.user_id)
+        self.visit_data = self.api_client.get_visits_for(selected_user, ongoing=True)[0]
         current_time = dt.datetime.now()
 
         # Create Visit Info Frame ##################################################
         visit_info_frame = tk.LabelFrame(self, text="User Info")
 
         user_name_label = tk.Label(visit_info_frame, text="Name:", width=10)
-        self.user_name = tk.Label(visit_info_frame, text=self.visit_data[0], relief="sunken", width=30)
+        self.user_name = tk.Label(visit_info_frame, text=self.selected_user.name, relief="sunken", width=30)
 
         user_type_label = tk.Label(visit_info_frame, text="User Type:", width=10)
-        self.user_type = tk.Label(visit_info_frame, text=str(self.visit_data[1]), relief="sunken", width=30)
+        self.user_type = tk.Label(visit_info_frame, text=self.selected_user.user_type.name, relief="sunken", width=30)
 
         visit_start_time_label = tk.Label(visit_info_frame, text="Visit Start:", width=10)
-        self.visit_start_time = tk.Label(visit_info_frame, text=str(self.visit_data[2]), width=30, relief="sunken")
+        self.visit_start_time = tk.Label(visit_info_frame, text=str(self.visit_data.start_time), width=30, relief="sunken")
 
         visit_end_time_label = tk.Label(visit_info_frame, text="Visit End:", width=10)
         self.visit_end_time = tk.Label(visit_info_frame, text=str(current_time), width=30, relief="sunken")
@@ -75,7 +78,7 @@ class SignOutPage(tk.Frame):
         Create a new project frame and add it to the projects list frame.
         :return: None
         """
-        project = ProjectFrame(self.projects_list_frame.interior, self.selected_user)
+        project = ProjectFrame(self.projects_list_frame.interior, self.selected_user, self.api_client)
         project.on_remove(lambda: self.remove_project(project))
         self.project_frames_list.append(project)
         self.project_frames_list[-1].pack(padx=4, pady=4)
@@ -95,13 +98,13 @@ class SignOutPage(tk.Frame):
         :return: None
         """
         self.destroy()
-        user_interface.launch_gui.MainPage(self.parent, self.controller)
+        user_interface.launch_gui.MainPage(self.parent, self.controller, self.api_client)
 
     def log_out_user(self):
         """
         Call the Sign-Out From UI method and return to the homepage.
         :return: None
         """
-        signout_from_ui(self.visit_data[0], self.project_frames_list)  # self.visit_data[3])
+        signout_from_ui(self.visit_data, self.project_frames_list)  # self.visit_data[3])
         self.destroy()
-        user_interface.launch_gui.MainPage(self.parent, self.controller)
+        user_interface.launch_gui.MainPage(self.parent, self.controller, self.api_client)

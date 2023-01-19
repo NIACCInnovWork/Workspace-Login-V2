@@ -11,12 +11,15 @@ from controller.new_user_controller import create_user_from_ui
 import user_interface.launch_gui
 
 
+from client import ApiClient
+
 class NewUserPage(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, api_client: ApiClient):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.controller = controller
+        self.api_client = api_client
 
         new_user_window_title_label = tk.Label(self, text="Create User", font=("Arial", 14), pady=10)
         name_entry_label = tk.Label(self, text="Full Name:", pady=5)
@@ -52,7 +55,7 @@ class NewUserPage(tk.Frame):
             else:
                 user_type = ''  # This should indicate an error of some kind has occurred.
 
-            create_user_from_ui(name, user_type)
+            create_user_from_ui(self.api_client, name, user_type)
             self.return_to_main()
             # controller.show_frame("MainPage")
 
@@ -78,7 +81,7 @@ class NewUserPage(tk.Frame):
 
     def return_to_main(self):
         self.destroy()
-        user_interface.launch_gui.MainPage(self.parent, self.controller)
+        user_interface.launch_gui.MainPage(self.parent, self.controller, self.api_client)
 
 
 #

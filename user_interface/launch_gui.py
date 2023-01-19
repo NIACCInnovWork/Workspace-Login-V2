@@ -6,40 +6,36 @@ Author: Anthony Riesen
 
 import tkinter as tk
 # from PIL import Image, ImageTK
-import datetime as dt
 import tkinter.messagebox
 
 import user_interface.sign_in_window
 import user_interface.new_user_window
 import user_interface.sign_out_window
-from database import UserRepository, Visit, VisitRepository
-from database.initialize_database import *
+from database import Visit, VisitRepository
 
+from client import ApiClient
 
 class MainPage(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, api_client: ApiClient):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.controller = controller
-
-        date = dt.datetime.now()
+        self.api_client = api_client
 
         # Create Logged In Frame #####################################################################
         logged_in_frame = tk.LabelFrame(self, text="Logged In")
 
         # Pull Data
-        self.database = start_workspace_database()
-        visit_repo = VisitRepository(self.database)
-        self.users_logged_in = visit_repo.get_logged_in_users()
+        self.users_logged_in = self.api_client.get_users(ongoing=True)
 
         # Create listbox & scrollbar
         scrollbar = tk.Scrollbar(logged_in_frame, orient="vertical")
         self.logged_in_listbox = tk.Listbox(logged_in_frame, yscrollcommand=scrollbar.set, height=15)
 
         # Populate listbox
-        for visitor in self.users_logged_in:
-            self.logged_in_listbox.insert(self.users_logged_in.index(visitor), visitor[0])
+        for index, visitor in enumerate(self.users_logged_in):
+            self.logged_in_listbox.insert(index, visitor.name)
 
         # Configure & pack listbox/scrollbar
         scrollbar.config(command=self.logged_in_listbox.yview)
@@ -76,7 +72,7 @@ class MainPage(tk.Frame):
         :return: none
         """
         self.destroy()
-        user_interface.sign_in_window.SignInPage(self.parent, self.controller)
+        user_interface.sign_in_window.SignInPage(self.parent, self.controller, self.api_client)
 
     def open_new_user_page(self):
         """
@@ -84,7 +80,7 @@ class MainPage(tk.Frame):
         :return:
         """
         self.destroy()
-        user_interface.new_user_window.NewUserPage(self.parent, self.controller)
+        user_interface.new_user_window.NewUserPage(self.parent, self.controller, self.api_client)
 
     def open_sign_out_page(self):
         """
@@ -96,15 +92,11 @@ class MainPage(tk.Frame):
             index = self.logged_in_listbox.curselection()
             print(index)
             selected_name = self.logged_in_listbox.get(index)
-            selected_id = self.users_logged_in[index[0]][1]
-
-            # TODO temporary to get this working with the UI again
-            selected_user = UserRepository(self.database).load(selected_id)
-
-            # print(selected_name)
+            selected_id = self.users_logged_in[index[0]].id
+            selected_user = self.api_client.get_user(selected_id)
             self.destroy()
             # user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_name)
-            user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_user)
+            user_interface.sign_out_window.SignOutPage(self.parent, self.controller, self.api_client, selected_user)
         except tk.TclError:
             tk.messagebox.showwarning("Select User", "You need to select your name from the list of logged in users!")
 

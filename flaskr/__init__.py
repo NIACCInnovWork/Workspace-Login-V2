@@ -18,12 +18,27 @@ def create_app():
     def main_routes():
         return {
             "Users": f"{flask.request.host_url}api/users",
-            "Projects": f"{flask.request.host_url}api/projects"
+            "Projects": f"{flask.request.host_url}api/projects",
+            "Equipment": f"{flask.request.host_url}api/equipment",
+            "Visits": f"{flask.request.host_url}api/visits",
+            "About": f"{flask.request.host_url}api/about"
+        }
+
+    @app.route("/api/about")
+    def about():
+        return {
+            "Description": "Login and equipment usage tracker for the Inovation Workspace",
+            "Api Documentation": "TODO",
+            "Version": "1.0.0",
         }
 
     from flaskr.user_routes import bp as user_routes_bp
     from flaskr.project_routes import bp as project_routes_bp
+    from flaskr.equipment_routes import bp as equipment_routes_bp
+    from flaskr.visit_routes import bp as visit_routes_bp
     app.register_blueprint(user_routes_bp)
     app.register_blueprint(project_routes_bp)
+    app.register_blueprint(equipment_routes_bp)
+    app.register_blueprint(visit_routes_bp)
 
     return app

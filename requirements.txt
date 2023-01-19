@@ -10,3 +10,6 @@ fpdf
 
 # Dependencies for generating test db
 faker
+
+# Dependencies for client
+requests

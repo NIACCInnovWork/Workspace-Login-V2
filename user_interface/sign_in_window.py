@@ -7,17 +7,20 @@ import tkinter as tk
 import datetime as dt
 from PIL import Image, ImageTk
 from database.class_user import User
-from database.initialize_database import start_workspace_database
+# from database.initialize_database import start_workspace_database
 from controller.sign_in_controller import create_visit_from_ui
 import user_interface.launch_gui
+
+from client import ApiClient
 
 
 class SignInPage(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, api_client: ApiClient):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.controller = controller
+        self.api_client = api_client
 
         # date = dt.datetime.now()
 
@@ -25,16 +28,15 @@ class SignInPage(tk.Frame):
         users_frame = tk.LabelFrame(self, text="All Users")
 
         # Pull Data
-        database = start_workspace_database()
-        self.user_list = User.get_all_visitors(database)
+        self.user_list = self.api_client.get_users()
 
         # Create listbox & scrollbar
         user_scrollbar = tk.Scrollbar(users_frame, orient="vertical")
         users_list_box = tk.Listbox(users_frame, yscrollcommand=user_scrollbar.set, height=15)
 
         # Populate listbox
-        for user in self.user_list:
-            users_list_box.insert(self.user_list.index(user), user[0])
+        for index, user in enumerate(self.user_list):
+            users_list_box.insert(index, user.name)
 
         # Configure & pack listbox/scrollbar
         user_scrollbar.config(command=users_list_box.yview)
@@ -88,13 +90,13 @@ class SignInPage(tk.Frame):
 
         # Create Function to update user info based on selection ##########
         def callback(event):
-            selection = event.widget.curselection()
-            if selection:
-                index = selection[0]
-                selected_id = self.user_list[index][1]
-                selected_user = User.load(database, selected_id)
+            selected = event.widget.curselection()
+            if selected:
+                # Selected is only a summery, so we need to fetch the full User
+                selected_user = self.api_client.get_user(self.user_list[selected[0]].id)
+
                 user_name_entry_label.configure(text=selected_user.name)
-                user_type_entry_label.configure(text=selected_user.user_type)
+                user_type_entry_label.configure(text=selected_user.user_type.name)
                 visit_date_entry_label.configure(text=str(dt.datetime.now()))
             else:
                 user_name_label.configure(text="")
@@ -105,8 +107,11 @@ class SignInPage(tk.Frame):
         def sign_in_button():
             # selected_name = users_list_box.get(users_list_box.curselection())
             index = users_list_box.curselection()
-            selected_id = self.user_list[index[0]][1]
-            create_visit_from_ui(selected_id)
+            print("index")
+            print(index)
+            selected_id = self.user_list[index[0]].id
+
+            create_visit_from_ui(self.api_client, selected_id)
             self.return_to_main()
 
         # Create Button Frame #############################################
@@ -126,4 +131,4 @@ class SignInPage(tk.Frame):
 
     def return_to_main(self):
         self.destroy()
-        user_interface.launch_gui.MainPage(self.parent, self.controller)
+        user_interface.launch_gui.MainPage(self.parent, self.controller, self.api_client)

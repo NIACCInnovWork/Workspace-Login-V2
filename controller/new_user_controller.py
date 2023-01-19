@@ -7,10 +7,10 @@ Author: Anthony Riesen
 import tkinter.messagebox
 
 from database import User, UserType, UserRepository, Visit, VisitRepository
-from database.initialize_database import start_workspace_database
 
+from client import ApiClient
 
-def create_user_from_ui(name: str, user_type: str):
+def create_user_from_ui(api_client: ApiClient, name: str, user_type: str):
     """
     Takes data from the UI, checks whether a member already exists in the database, if it does, displays a message,
     if it does not, calls the function to add the user to the database.
@@ -18,17 +18,12 @@ def create_user_from_ui(name: str, user_type: str):
     :param user_type: User type, input from UI, ENUM which can be 1 - 5
     :return: none
     """
-    database = start_workspace_database()
-    user_repo = UserRepository(database)
-    visit_repo = VisitRepository(database)
     print(name, user_type)
 
-    try:
-        user = user_repo.load_by_name(name)  # If the name doesn't have to be unique, this could be eliminated
-        # user = User.load(database, user_id)
-    except TypeError:
-        user = user_repo.create(name, UserType[user_type])
-        visit = visit_repo.create_for(user)
+    existing_users = api_client.get_users(name=name)  # If the name doesn't have to be unique, this could be eliminated
+    if not existing_users:
+        user = api_client.create_user(name, UserType[user_type])
+        visit = api_client.create_visit_for(user)
         tkinter.messagebox.showinfo("Member Created!",
                                     "Your new member has been created and you've been logged in for your first visit!")
     else:

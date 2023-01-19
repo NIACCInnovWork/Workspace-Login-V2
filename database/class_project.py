@@ -97,6 +97,8 @@ class ProjectRepository:
         sql_load_command = "SELECT * FROM projects WHERE project_id = %s"
         my_cursor.execute(sql_load_command, (project_id,))
         record = my_cursor.fetchone()
+        if not record:
+            return None
         project = Project(record[0], record[1], record[2], ProjectType[record[3]])
 
         return project
@@ -104,19 +106,15 @@ class ProjectRepository:
     def load_for(self, user: User):
         """
         Fetches all projects with which the user is associated
-
-        TODO - This needs to return projects, not raw db records
         """
-        my_cursor = self.conn.cursor()
-        sql_load_command = "SELECT DISTINCT projects.project_id, projects.project_name FROM visits_projects " \
+        curr = self.conn.cursor()
+        sql = "SELECT DISTINCT projects.project_id, projects.project_name FROM visits_projects " \
                            "INNER JOIN visits ON visits_projects.visit_id=visits.visit_id " \
                            "INNER JOIN users ON visits.user_id=users.user_id " \
                            "INNER JOIN projects ON visits_projects.project_id=projects.project_id " \
                            "WHERE users.user_id=%s"
-        my_cursor.execute(sql_load_command, (user.user_id,))
-        record_list = my_cursor.fetchall()
-
-        return record_list
+        curr.execute(sql, (user.user_id,))
+        return [ ProjectSummary(row[0], row[1]) for row in curr.fetchall() ]
 
     def load_all_projects(self) -> List[ProjectSummary]:
         my_cursor = self.conn.cursor()

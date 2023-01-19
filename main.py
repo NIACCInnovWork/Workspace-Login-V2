@@ -6,9 +6,11 @@ Author: Anthony Riesen
 
 import tkinter as tk
 from tkinter import font as tkfont
-from database.initialize_database import *
+# from database.initialize_database import *
 
 import user_interface.launch_gui
+
+from client import ApiClient
 
 class LoginApplication(tk.Tk):
 
@@ -24,22 +26,10 @@ class LoginApplication(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-        mainframe = user_interface.launch_gui.MainPage(container, self)
+        mainframe = user_interface.launch_gui.MainPage(container, self, ApiClient("http://workspace-login.riesenlabs.com"))
 
 
 if __name__ == "__main__":
-    create_workspace_database()
-    mydb = start_workspace_database()
-    create_users_table(mydb)
-    create_visits_table(mydb)
-    create_projects_table(mydb)
-    create_visits_projects_table(mydb)
-    create_usage_log_table(mydb)
-    create_equipment_table(mydb)
-    create_materials_table(mydb)
-    create_equipment_materials_table(mydb)
-    create_materials_consumed_table(mydb)
-
     # Temporarily Turned off for data analysis -- Runs main application
     app = LoginApplication()
     app.mainloop()
