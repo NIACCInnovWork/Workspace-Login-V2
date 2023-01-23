@@ -1,5 +1,5 @@
 import flask
-from flask import Flask
+import os
 
 from urllib.parse import urlparse
 
@@ -7,8 +7,16 @@ from flaskr.db import close_db
 
 
 def create_app():
-    app = Flask(__name__)
+    app = flask.Flask(__name__)
     app.teardown_appcontext(close_db)
+
+    @app.before_request
+    def check_token():
+        if flask.request.path == "/api/healthcheck":
+            return
+
+        if flask.request.cookies.get("api-token") != os.environ.get("API_TOKEN", "test-token"):
+            return flask.abort(401, "No access token found or incorrect access token")
 
     @app.route("/")
     def redirect_to_api():
@@ -21,8 +29,13 @@ def create_app():
             "Projects": f"{flask.request.host_url}api/projects",
             "Equipment": f"{flask.request.host_url}api/equipment",
             "Visits": f"{flask.request.host_url}api/visits",
-            "About": f"{flask.request.host_url}api/about"
+            "About": f"{flask.request.host_url}api/about",
+            "Healthcheck": f"{flask.request.host_url}api/healthcheck",
         }
+
+    @app.route("/api/healthcheck")
+    def healthcheck():
+        return { "status": "ok" }
 
     @app.route("/api/about")
     def about():

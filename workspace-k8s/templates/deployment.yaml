@@ -41,17 +41,22 @@ spec:
                 secretKeyRef:
                   name: workspace-db-mariadb
                   key: mariadb-root-password
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: workspace-login-api-token
+                  key: api-token
           ports:
             - name: http
               containerPort: 8000
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/healthcheck
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/healthcheck
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
