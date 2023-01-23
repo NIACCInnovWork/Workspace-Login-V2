@@ -20,10 +20,8 @@ spec:
       labels:
         {{- include "workspace-k8s.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - name: workspace-login-app
       serviceAccountName: {{ include "workspace-k8s.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -31,9 +29,18 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          # image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          image: workspace-login-app:local
+          image: registry.digitalocean.com/workspace-login-app/web-app:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DB_HOST
+              value: workspace-db-mariadb
+            - name: DB_USER
+              value: root
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: workspace-db-mariadb
+                  key: mariadb-root-password
           ports:
             - name: http
               containerPort: 8000
@@ -46,14 +53,6 @@ spec:
             httpGet:
               path: /
               port: http
-          env:
-            - name: DB_HOST
-              value: workspace-db-mariadb
-            - name: DB_PASSWORD
-              valueFrom:
-               secretKeyRef:
-                name: workspace-db-mariadb
-                key: mariadb-root-password
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

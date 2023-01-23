@@ -1,15 +1,9 @@
 mysql-connector-python
-Pillow
+# Pillow
 flask
 
 # Data Analysis and Reporting
-numpy
-pandas
-matplotlib
-fpdf
-
-# Dependencies for generating test db
-faker
-
-# Dependencies for client
-requests
+# numpy
+# pandas
+# matplotlib
+# fpdf

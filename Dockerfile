@@ -1,32 +1,20 @@
-FROM python:slim
-EXPOSE 8000/tcp
+FROM python:3.10-slim
+EXPOSE 8000
 
-RUN useradd -ms /bin/bash login-web-server
-USER login-web-server
-WORKDIR /home/login-web-server
+# Create user and install directory
+RUN useradd --system login-api && \
+  mkdir /opt/login-api-server && \
+  chown login-api:login-api /opt/login-api-server
 
-# DATABASE configuration
-ENV DB_HOST     "localhost"
-ENV DB_USER     "root"
-ENV DB_PASSWORD "foobar"
+# Install Requirements
+COPY requirements.txt ./
+RUN pip install -r requirements.txt && pip install gunicorn
 
-# Install requirements first
-COPY requirements*.txt ./
-RUN pip install -r requirements.txt
-RUN pip install -r requirements-prod.txt
+USER login-api
+WORKDIR /opt/login-api-server
 
-# Copy in application source
-# This needs to be refactored in order to reduce the layer count.
-COPY config.py .
-COPY controller/ controller/
-COPY database/ database/
-COPY main.py .
-COPY report_cli.py .
-COPY reports reports/
-COPY resources resources/
-COPY templates templates/
-COPY user_interface user_interface/
-COPY flaskr flaskr/
+COPY config.py ./
+COPY database database
+COPY flaskr flaskr
 
-# Launch the login application within gunicorn
-ENTRYPOINT [".local/bin/gunicorn", "--workers=4", "--bind=0.0.0.0:8000", "--access-logfile=-", "flaskr:create_app()"]
+CMD ["gunicorn", "--bind=0.0.0.0", "--access-logfile=-", "flaskr:create_app()"]
