@@ -32,7 +32,6 @@ class VisitProject:
         sql_create_command = "INSERT INTO visits_projects (visit_id, project_id) VALUES (%s, %s)"
         select_data = (visit_id, project_id)
         my_cursor.execute(sql_create_command, select_data)
-        database.commit()
 
         return VisitProject.load(database)
 

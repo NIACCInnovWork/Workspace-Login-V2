@@ -21,7 +21,11 @@ class UsageLogEntry:
         self.time_used = time_used
 
     @staticmethod
-    def create(database: mysql.connector, visit_project_id: int, time_used: int):
+    def create(
+            database: mysql.connector, 
+            visit_project_id: int, 
+            time_used: int
+    ):
         """
         Create an entry in the database's UsageLog table.
         @Todo - Investigate the "lastrow" method on a database connection cursor following an INSERT database command
@@ -35,7 +39,6 @@ class UsageLogEntry:
         sql_create_command = "INSERT INTO usage_log (visit_project_id, time_used) VALUES (%s, %s)"
         select_data = (visit_project_id, time_used)
         my_cursor.execute(sql_create_command, select_data)
-        database.commit()
 
         return UsageLogEntry.load(database, my_cursor.lastrowid)
 

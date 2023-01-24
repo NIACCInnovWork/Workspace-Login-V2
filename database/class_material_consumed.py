@@ -53,7 +53,6 @@ class MaterialConsumed:
                              "VALUES (%s, %s, %s)"
         select_data = (equipment_material_id, usage_log_id, amount_consumed)
         my_cursor.execute(sql_create_command, select_data)
-        database.commit()
 
         return MaterialConsumed.load_last(database)
 

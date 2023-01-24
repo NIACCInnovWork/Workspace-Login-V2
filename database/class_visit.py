@@ -29,6 +29,10 @@ class Visit:
     start_time: dt.datetime
     end_time: Optional[dt.datetime]
 
+    def is_ended(self) -> bool:
+        return self.end_time is not None
+
+
 
 class VisitRepository:
     def __init__(self, conn: MySQLConnection):
@@ -108,6 +112,15 @@ class VisitRepository:
         # I suspect this will currently will throw an error because timestamp (record[3]) cannot be null
 
         return [Visit(row[0], row[1], row[2], row[3]) for row in rows] 
+
+    def update(self, visit: Visit):
+        curr = self.conn.cursor()
+        curr.execute(
+            "UPDATE visits SET user_id=%s, start_time=%s, end_time=%s WHERE visit_id=%s", 
+            (visit.user_id, visit.start_time, visit.end_time, visit.visit_id)
+        )
+        curr.close()
+
 
     def get_logged_in_users(self):
         """
