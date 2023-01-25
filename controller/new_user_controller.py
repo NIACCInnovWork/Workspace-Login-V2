@@ -6,7 +6,8 @@ Author: Anthony Riesen
 """
 import tkinter.messagebox
 
-from database import User, UserType, UserRepository, Visit, VisitRepository
+from database.class_user import User, UserType, UserRepository 
+from database.class_visit import Visit, VisitRepository
 
 from client import ApiClient
 

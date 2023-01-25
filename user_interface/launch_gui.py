@@ -11,7 +11,7 @@ import tkinter.messagebox
 import user_interface.sign_in_window
 import user_interface.new_user_window
 import user_interface.sign_out_window
-from database import Visit, VisitRepository
+from database.class_visit import Visit, VisitRepository
 
 from client import ApiClient
 

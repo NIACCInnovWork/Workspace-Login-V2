@@ -105,6 +105,6 @@ class SignOutPage(tk.Frame):
         Call the Sign-Out From UI method and return to the homepage.
         :return: None
         """
-        signout_from_ui(self.visit_data, self.project_frames_list)  # self.visit_data[3])
+        signout_from_ui(self.api_client, self.visit_data, self.project_frames_list)  # self.visit_data[3])
         self.destroy()
         user_interface.launch_gui.MainPage(self.parent, self.controller, self.api_client)

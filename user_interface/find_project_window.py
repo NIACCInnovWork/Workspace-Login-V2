@@ -8,7 +8,8 @@ Author: Anthony Riesen
 import tkinter as tk
 from tkinter import font as tkfont
 
-from database import User, Project, ProjectType, ProjectRepository
+from database.class_user import User
+from database.class_project import Project, ProjectType, ProjectRepository
 # from database.initialize_database import start_workspace_database
 
 from client import ApiClient
@@ -101,7 +102,7 @@ class FindProjectWindow(tk.Toplevel):
     def load_my_projects(self):
         self.project_list = self.api_client.get_projects_for(self.user)
         for project in self.project_list:
-            self.project_list_box.insert(self.project_list.index(project), project[1])
+            self.project_list_box.insert(self.project_list.index(project), project.name)
 
     def load_all_projects(self):
         self.project_list = self.api_client.get_projects()

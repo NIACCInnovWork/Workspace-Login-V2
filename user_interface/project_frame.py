@@ -4,7 +4,8 @@ from typing import Callable
 
 from database.class_equipment import Equipment
 from database.class_material import Material
-from database import User, Project, ProjectType
+from database.class_user import User
+from database.class_project import Project, ProjectType
 from user_interface.ScrollingListFrame import ScrollingListFrame
 from user_interface.find_project_window import FindProjectWindow
 
@@ -196,14 +197,12 @@ class EquipmentFrame(tk.Frame):
     def on_remove(self, callback: Callable):
         self.on_remove_callback = callback
 
-    def get_equipment_id(self):
+    def get_equipment(self) -> Equipment:
         equipment_name = self.equipment_variable.get()
         equipment_index = self.equipment_names.index(equipment_name)
-        equipment_id = self.equipment_names_ids[equipment_index][1]
-        return equipment_id
+        return self.equipment_names_ids[equipment_index]
 
-    def get_material_id(self):
+    def get_material(self) -> Material:
         material_name = self.material_used_variable.get()
         material_index = self.material_list.index(material_name)
-        material_id = self.material_names_ids[material_index][1]
-        return material_id
+        return self.material_names_ids[material_index]

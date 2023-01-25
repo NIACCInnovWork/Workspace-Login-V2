@@ -4,17 +4,22 @@ This file defines the controller that controls how the Sign Out Window interacts
 data from the database when opened and saves data to the database when closed.
 Author: Anthony Riesen
 """
-from database import User, UserRepository
-from database import Visit, VisitRepository
+from client import ApiClient
+from database.class_user import User, UserRepository
+from database.class_visit import Visit, VisitRepository
 
 from database.class_equipment_material import EquipmentMaterial
 from database.class_logout_composite import SignOutComposite
 from database.class_project import Project, ProjectType
 from database.class_visit_project import VisitProject
-# from database.initialize_database import start_workspace_database
+
 import tkinter.messagebox
 
 from dataclasses import dataclass
+
+from flaskr.visit_routes import SignoutRequest
+
+import datetime as dt
 
 seconds_per_hour = 3600
 seconds_per_minute = 60
@@ -38,23 +43,12 @@ def load_visit_data(user_id: int):
     return visit_data
 
 
-class SignOutRequest:
-    def __init__(self, visit: Visit):
-        self.visit = visit
-        self.new_projects = []
+def zero_if_empty(raw: str) -> int:
+    if raw == '' or raw is None:
+        return 0
+    return int(raw)
 
-    def with_new_project(self, new_project: 'NewProjectRequest'):
-        self.new_projects.append(new_project)
-
-
-@dataclass
-class NewProjectRequest:
-    name: str
-    description: str
-    project_type: ProjectType
-
-
-def signout_from_ui(visit: Visit, project_frames_list: []):
+def signout_from_ui(api_client: ApiClient, visit: Visit, project_frames_list: []):
     """
     Restructured Method: This method now just collects the information needed and passes it to the SignOutComposite
     class to construct all the associated objects.
@@ -62,50 +56,40 @@ def signout_from_ui(visit: Visit, project_frames_list: []):
     :param project_frames_list:
     :return:
     """
-    sign_out_request = SignOutRequest(visit)
+    print("Signing out from ui")
+    sign_out_request = SignoutRequest.for_visit(visit)
 
     for project_frame in project_frames_list:
         # Collect Project Info
-        if project_frame.selected_project.project_id == 0:
-            sign_out_request.with_new_project(NewProjectRequest(
-                name=project_frame.project_name.get(),
-                description=project_frame.project_description.get(),
-                project_type=ProjectType[project_frame.project_type_variable.get()],
-            ))
-        elif project_frame.selected_project.project_id != 0:
-            pass
-            # TODO
-            # project_list_length = sign_out_object.add_project(
-            #         project_frame.selected_project.project_id,
-            #         project_frame.selected_project.project_name,
-            #         project_frame.selected_project.project_description,
-            #         project_frame.selected_project.project_type,
-            #         database
-            # )
-            # project_index = project_list_length - 1
-            # print(project_index)
+        print("Selected Project")
+        print(project_frame.selected_project)
+        selected_project = project_frame.selected_project
+        if selected_project.project_id == 0 or selected_project.project_id is None:
+            work_session = sign_out_request.with_new_project(
+                project_frame.project_name.get(),
+                project_frame.project_description.get(),
+                ProjectType[project_frame.project_type_variable.get()],
+            )
+        elif selected_project.project_id != 0:
+            work_session = sign_out_request.with_existing_project(selected_project)
 
-    #     for equipment_frame in project_frame.equipment_frames_list:
-    #         # Collect Usage Info
-    #         equipment_id = equipment_frame.get_equipment_id()
-    #         time_used_hours = equipment_frame.time_used_hours.get()
-    #         if time_used_hours == '':
-    #             time_used_hours = '0'
-    #         time_used_minutes = equipment_frame.time_used_minutes.get()
-    #         if time_used_minutes == '':
-    #             time_used_minutes = '0'
-    #         time_used = (int(time_used_hours) * seconds_per_hour) + (int(time_used_minutes) * seconds_per_minute)
-    #         material_id = equipment_frame.get_material_id()
-    #         amount_consumed = int(equipment_frame.amount_used.get())
-    #         equipment_material_id = EquipmentMaterial.get_equipment_material_id(database, equipment_id, material_id)
-    #
-    #         print(project_index, equipment_id, time_used_hours, time_used_minutes,
-    #               time_used, material_id, equipment_material_id, amount_consumed)
-    #         print(equipment_material_id)
-    #
-    #         sign_out_object.add_material_usage(project_index, equipment_material_id, amount_consumed, time_used)
-    #
-    # sign_out_object.commit_data(database)
+        for equipment_frame in project_frame.equipment_frames_list:
+            # Collect Usage Info
+            selected_equipment = equipment_frame.get_equipment()
+
+            time_used = dt.timedelta(
+                hours=zero_if_empty(equipment_frame.time_used_hours.get()),
+                minutes=zero_if_empty(equipment_frame.time_used_minutes.get())
+            )
+
+            eq_use_log = work_session.with_equipment_use(selected_equipment, time_used)
+
+            material = equipment_frame.get_material()
+            amount_consumed = int(equipment_frame.amount_used.get())
+
+            eq_use_log.with_consumed_materials(material, amount_consumed)
+
+    api_client.signout(sign_out_request)
 
 
 

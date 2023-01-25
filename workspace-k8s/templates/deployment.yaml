@@ -20,17 +20,17 @@ spec:
       labels:
         {{- include "workspace-k8s.selectorLabels" . | nindent 8 }}
     spec:
-      imagePullSecrets:
-        - name: workspace-login-app
       serviceAccountName: {{ include "workspace-k8s.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      imagePullSecrets:
+        - name: workspace-login-app
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: registry.digitalocean.com/workspace-login-app/web-app:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: Always
           env:
             - name: DB_HOST
               value: workspace-db-mariadb

@@ -5,8 +5,8 @@ Author: Anthony Riesen
 """
 
 import tkinter as tk
+import os
 from tkinter import font as tkfont
-# from database.initialize_database import *
 
 import user_interface.launch_gui
 
@@ -26,7 +26,9 @@ class LoginApplication(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-        mainframe = user_interface.launch_gui.MainPage(container, self, ApiClient("http://workspace-login.riesenlabs.com"))
+
+        api_client = ApiClient("https://workspace-login.riesenlabs.com", os.environ.get("API_TOKEN"))
+        mainframe = user_interface.launch_gui.MainPage(container, self, api_client)
 
 
 if __name__ == "__main__":

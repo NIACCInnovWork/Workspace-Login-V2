@@ -148,6 +148,7 @@ def get_projects(user_id: int):
         {
             "id": proj.id,
             "name": proj.name,
+            "ref": f"{flask.request.host_url}api/projects/{proj.id}",
         }
         for proj in projects
     ]
