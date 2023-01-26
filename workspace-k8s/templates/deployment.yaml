@@ -33,14 +33,14 @@ spec:
           imagePullPolicy: Always
           env:
             - name: DB_HOST
-              value: workspace-db-mariadb
+              value: workspace-db-mysql
             - name: DB_USER
               value: root
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: workspace-db-mariadb
-                  key: mariadb-root-password
+                  name: workspace-db-mysql
+                  key: mysql-root-password
             - name: API_TOKEN
               valueFrom:
                 secretKeyRef:

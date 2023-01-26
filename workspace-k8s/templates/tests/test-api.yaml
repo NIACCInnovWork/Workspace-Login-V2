@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "workspace-k8s.fullname" . }}-api-test"
+  labels:
+    {{- include "workspace-k8s.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: api-test
+      image: registry.digitalocean.com/workspace-login-app/api-test:latest
+      env:
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: workspace-login-api-token
+              key: api-token
+  restartPolicy: Never

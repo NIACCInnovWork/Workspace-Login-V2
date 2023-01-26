@@ -6,11 +6,10 @@ Author: Anthony Riesen
 
 from enum import Enum
 import datetime as dt
-import mysql.connector
 from typing import List
 from dataclasses import dataclass
 from database.matchpolicy import MatchPolicy
-
+from flaskr.db import MySQLConnection
 
 class UserType(Enum):
     """
@@ -41,7 +40,7 @@ class UserSummary:
     name: str
 
 class UserRepository:
-    def __init__(self, conn: mysql.connector.MySQLConnection):
+    def __init__(self, conn: MySQLConnection):
         self.conn = conn
 
     def create(self, name: str, user_type: UserType):

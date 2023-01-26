@@ -17,6 +17,9 @@ class ApiClient:
         self.session = requests.Session()
         self.session.cookies = requests.cookies.cookiejar_from_dict({"api-token": api_token})
 
+    def close(self):
+        self.session.close()
+
     def get_users(self, name: Optional[str] = None, ongoing=None) -> List[UserSummary]:
         params = {}
         if name is not None:
@@ -91,7 +94,6 @@ class ApiClient:
         req = self.session.get(f"{self.root_url}/api/projects/{project_id}")
         try:
             rec = req.json()
-            print(rec)
             return Project(rec["id"], rec["name"], rec["description"], ProjectType[rec["type"]]) 
         except requests.exceptions.JSONDecodeError as ex:
             print("Failed Request Text")
