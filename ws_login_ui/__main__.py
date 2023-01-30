@@ -25,8 +25,10 @@ class LoginApplication(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-
-        api_client = ApiClient("https://workspace-login.riesenlabs.com", os.environ.get("API_TOKEN"))
+        api_client = ApiClient(
+                os.environ.get("API_HOST", "https://workspace-login.riesenlabs.com"), 
+                os.environ.get("API_TOKEN", "test-token")
+        )
         mainframe = launch_gui.MainPage(container, self, api_client)
 
 

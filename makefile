@@ -39,3 +39,7 @@ docker-test-run: docker-test-build
 
 docker-test-push: docker-test-build
 	docker push $(DOCKER_API_TEST):latest && docker push $(DOCKER_API_TEST):$(DOCKER_VERSION_TAG)
+
+
+deploy: docker-api-push docker-test-push
+	helm upgrade dev-workspace workspace-k8s -f workspace-k8s/values-dev.yaml --set image.tag=$(DOCKER_VERSION_TAG)

@@ -22,9 +22,16 @@ import os
 from ws_login_client import ApiClient
 
 
+def build_api_client() -> ApiClient:
+    return ApiClient(
+        os.environ.get("API_HOST", "https://workspace-login.riesenlabs.com"), 
+        os.environ.get("API_TOKEN", "test-token")
+    )
+
+
 class TestUserApiEndpoints(unittest.TestCase):
     def setUp(self) -> None:
-        self.api_client = ApiClient("https://workspace-login.riesenlabs.com", os.environ.get("API_TOKEN"))
+        self.api_client = build_api_client()
 
     def tearDown(self) -> None:
         self.api_client.close()
@@ -59,7 +66,7 @@ class TestUserApiEndpoints(unittest.TestCase):
 
 class TestProjectApiEndpoints(unittest.TestCase):
     def setUp(self) -> None:
-        self.api_client = ApiClient("https://workspace-login.riesenlabs.com", os.environ.get("API_TOKEN"))
+        self.api_client = build_api_client()
 
     def tearDown(self) -> None:
         self.api_client.close()
@@ -81,7 +88,7 @@ class TestProjectApiEndpoints(unittest.TestCase):
 
 class TestVisitApiEndpoints(unittest.TestCase):
     def setUp(self) -> None:
-        self.api_client = ApiClient("https://workspace-login.riesenlabs.com", os.environ.get("API_TOKEN"))
+        self.api_client = build_api_client()
 
     def tearDown(self) -> None:
         self.api_client.close()
@@ -99,7 +106,7 @@ class TestVisitApiEndpoints(unittest.TestCase):
 
 class TestEquipmentApiEndpoints(unittest.TestCase):
     def setUp(self) -> None:
-        self.api_client = ApiClient("https://workspace-login.riesenlabs.com", os.environ.get("API_TOKEN"))
+        self.api_client = build_api_client()
 
     def tearDown(self) -> None:
         self.api_client.close()

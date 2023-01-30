@@ -129,7 +129,6 @@ def create_visit(user_id: int):
 
     visit = visit_repo.create_for(user)
 
-    print("Createing new visit")
     return {
         "id": visit.visit_id,
         "startTime": visit.start_time,

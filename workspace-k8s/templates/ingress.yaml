@@ -1,30 +1,42 @@
-{{- if .Values.ingress.enabled -}}
-{{- $fullName := include "workspace-k8s.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: ws-login-{{ .Values.environment }}-api
   labels:
-    {{- include "workspace-k8s.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: ws-login
+    app.kubernetes.io/environment: {{ .Values.environment }} 
+    app.kubernetes.io/managed-by: helm
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    cert-manager.io/issuer: letsencrypt-prod
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
-        - workspace-login.riesenlabs.com
-      secretName: workspace-tls
+      {{- if eq "prod" .Values.environment }}
+      - workspace-login.riesenlabs.com
+      {{ else }}
+      - {{ .Values.environment }}.workspace-login.riesenlabs.com
+      {{- end }}
+      secretName: ws-{{ .Values.environment }}-tls
   rules:
-    - host: workspace-login.riesenlabs.com 
+    {{- if eq "prod" .Values.environment }}
+    - host: workspace-login.riesenlabs.com
+    {{ else }}
+    - host: {{ .Values.environment }}.workspace-login.riesenlabs.com
+    {{- end }}
       http:
         paths:
           - path: / 
             pathType: Prefix
             backend:
               service:
-                name: {{ $fullName }}
+                name: ws-login-{{ .Values.environment }}-api
                 port: 
-                  number: {{ $svcPort }}
+                  number: 80
 {{- end }}
+  
+
+
