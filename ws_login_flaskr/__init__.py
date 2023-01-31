@@ -31,6 +31,7 @@ def create_app():
             "Visits": f"{flask.request.host_url}api/visits",
             "About": f"{flask.request.host_url}api/about",
             "Healthcheck": f"{flask.request.host_url}api/healthcheck",
+            "Stats": f"{flask.request.host_url}api/stats",
         }
 
     @app.route("/api/healthcheck")
@@ -53,5 +54,9 @@ def create_app():
     app.register_blueprint(project_routes_bp)
     app.register_blueprint(equipment_routes_bp)
     app.register_blueprint(visit_routes_bp)
+
+    # The stats domain should be thought of as seperate 
+    from ws_login_flaskr.stats import bp as stats_bp
+    app.register_blueprint(stats_bp)
 
     return app
