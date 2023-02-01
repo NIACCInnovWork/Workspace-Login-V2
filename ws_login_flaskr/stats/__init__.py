@@ -11,26 +11,18 @@ from ws_login_flaskr.db import MySQLConnection, get_db
 
 bp = flask.Blueprint('stats', __name__, url_prefix='/api/stats')
 
-all_stats = {}
+# Registry into which stats are loaded
+from ws_login_flaskr.stats.stats_registry import stat, all_stats, Scaler, Point
 
-class Scaler:
-    def __init__(self, demention: str, value: any):
-        self.demention = demention
-        self.value = value
+# Stat file must be imported for stat to load
+import ws_login_flaskr.stats.visits_per_month 
+import ws_login_flaskr.stats.visits_per_day_of_week
+import ws_login_flaskr.stats.traffic_times
+import ws_login_flaskr.stats.users_by_type
+import ws_login_flaskr.stats.traffic_times
+import ws_login_flaskr.stats.projects_by_type
+import ws_login_flaskr.stats.equipment_stats
 
-
-class Point:
-    def __init__(self, coordinates: List[Scaler]):
-        self.coordinates = coordinates
-
-    def to_dict(self) -> Dict:
-        return { c.demention: c.value for c in self.coordinates }
-
-
-def stat(stat_class):
-    all_stats[stat_class.__name__] = stat_class
-
-    return stat_class
 
 
 @stat
@@ -52,6 +44,17 @@ class TotalVisits:
         curr.close()
 
         return [Point([Scaler("TotalVisits", user_count)])]
+
+@stat
+class TotalProjects:
+    def calculate(self, db: MySQLConnection) -> List[Point]:
+        curr = db.cursor()
+        curr.execute("SELECT COUNT(*) FROM projects;")
+        user_count = curr.fetchone()[0]
+        curr.close()
+
+        return [Point([Scaler("TotalProjects", user_count)])]
+
 
 @stat
 class VisitsPerUserType:
