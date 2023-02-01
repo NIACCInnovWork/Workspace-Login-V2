@@ -22,6 +22,7 @@ import ws_login_flaskr.stats.users_by_type
 import ws_login_flaskr.stats.traffic_times
 import ws_login_flaskr.stats.projects_by_type
 import ws_login_flaskr.stats.equipment_stats
+import ws_login_flaskr.stats.new_users_by_month
 
 
 
@@ -59,7 +60,7 @@ class TotalProjects:
 @stat
 class VisitsPerUserType:
     def calculate(self, db: MySQLConnection) -> List[Point]:
-        curr = db.cursor()
+        curr = db.cursor() 
         curr.execute("SELECT user_type, count(*) FROM users JOIN visits ON users.user_id = visits.user_id GROUP BY user_type;")
         
         points = [ Point([Scaler("type", row[0]), Scaler("count", row[1])]) for row in curr.fetchall() ]
@@ -67,7 +68,15 @@ class VisitsPerUserType:
         curr.close()
         return points
 
-
+@stat
+class AverageVisitsPerUser:
+    def calculate(self, db: MySQLConnection) -> List[Point]:
+        curr = db.cursor()
+        curr.execute("SELECT (SELECT COUNT(*) FROM visits) / (SELECT COUNT(*) FROM users);")
+        row = curr.fetchone()
+        points = [Point([Scaler("visitsPerUser", float(row[0]))])]
+        curr.close()
+        return points
 
 @bp.get('')
 def index() -> Dict[str, str]:
