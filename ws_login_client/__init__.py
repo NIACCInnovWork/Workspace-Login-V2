@@ -1,7 +1,11 @@
 import requests
 from ws_login_domain import * 
 from ws_login_domain.requests import SignoutRequest
-from typing import List, Optional
+from typing import List, Optional, Dict
+
+
+class UnknownStatError(Exception):
+    pass
 
 class ApiClient:
     def __init__(self, root_url, api_token: str):
@@ -100,12 +104,24 @@ class ApiClient:
         return [ProjectSummary(rec["id"], rec["name"]) for rec in req.json()]
 
     def signout(self, signout_request: SignoutRequest):
-        print("Sending Signout Request")
         resp = self.session.post(
                 f"{self.root_url}/api/visits/{signout_request.visit_id}/_signout", json=signout_request.to_dict()
         )
         resp.raise_for_status()
-        
+
+    def get_stats(self) -> List[str]:
+        req = self.session.get(f"{self.root_url}/api/stats")
+        return [ stat for stat in req.json().keys() ]
+
+    def get_stat(self, stat_name: str) -> List[Dict]: 
+        # NOTE im unsure if this should use raw dictionarys or the Scaler / 
+        # Pointer types the server uses. This is only used for integration 
+        # testing for now, so we will leave it as just Dicts
+        req = self.session.get(f"{self.root_url}/api/stats/{stat_name}")
+        if req.status_code == 404:
+            raise UnknownStatError("Could not find stat " + stat_name)
+        return req.json()
+
 
 if __name__ == '__main__':
     # client = ApiClient('http://workspace-login.riesenlabs.com')

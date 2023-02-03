@@ -14,4 +14,4 @@ COPY ws_login_domain/  ws_login_domain
 COPY ws_login_flaskr/  ws_login_flaskr
 COPY tests/ tests
 
-CMD ["python", "-m", "unittest", "tests.integration.test_api"]
+ENTRYPOINT ["python", "-m", "unittest" ]
