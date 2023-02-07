@@ -28,6 +28,7 @@ class EquipmentUsage:
                 Scaler("equipmentName", row[1]),
                 Scaler("totalUseTime", int(row[2])),
                 Scaler("numberOfUses", row[3]),
+                Scaler("avgUseTime", int(row[2])/row[3]),
             ])
             for row in cur.fetchall()
         ]

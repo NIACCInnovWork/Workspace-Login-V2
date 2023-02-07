@@ -5,6 +5,7 @@ business domain.  Very few objects should overlap.
 """
 
 import flask
+import logging
 from typing import Dict, List
 
 from ws_login_flaskr.db import MySQLConnection, get_db
@@ -24,12 +25,18 @@ import ws_login_flaskr.stats.projects_by_type
 import ws_login_flaskr.stats.equipment_stats
 import ws_login_flaskr.stats.new_users_by_month
 import ws_login_flaskr.stats.visits_by_week
+import ws_login_flaskr.stats.workspace_stats
 
 
 
 @stat
 class TotalUsers:
+    def __init__(self):
+        self._logger = logging.getLogger(self.__class__.__name__)
+
     def calculate(self, db: MySQLConnection) -> List[Point]:
+        self._logger.warn('Deprecated Stat invoked')
+
         curr = db.cursor()
         curr.execute("SELECT COUNT(*) FROM users;")
         user_count = curr.fetchone()[0]
@@ -39,7 +46,12 @@ class TotalUsers:
 
 @stat
 class TotalVisits:
+    def __init__(self):
+        self._logger = logging.getLogger(self.__class__.__name__)
+
     def calculate(self, db: MySQLConnection) -> List[Point]:
+        self._logger.warn('Deprecated Stat invoked')
+
         curr = db.cursor()
         curr.execute("SELECT COUNT(*) FROM visits;")
         user_count = curr.fetchone()[0]
@@ -49,7 +61,13 @@ class TotalVisits:
 
 @stat
 class TotalProjects:
+    def __init__(self):
+        self._logger = logging.getLogger(self.__class__.__name__)
+
     def calculate(self, db: MySQLConnection) -> List[Point]:
+        print(self.__class__.__name__)
+        self._logger.warn('Deprecated Stat invoked')
+
         curr = db.cursor()
         curr.execute("SELECT COUNT(*) FROM projects;")
         user_count = curr.fetchone()[0]
@@ -71,7 +89,12 @@ class VisitsPerUserType:
 
 @stat
 class AverageVisitsPerUser:
+    def __init__(self):
+        self._logger = logging.getLogger(self.__class__.__name__)
+
     def calculate(self, db: MySQLConnection) -> List[Point]:
+        self._logger.warn('Deprecated Stat invoked')
+
         curr = db.cursor()
         curr.execute("SELECT (SELECT COUNT(*) FROM visits) / (SELECT COUNT(*) FROM users);")
         row = curr.fetchone()
