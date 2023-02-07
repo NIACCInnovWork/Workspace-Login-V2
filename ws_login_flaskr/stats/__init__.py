@@ -23,6 +23,7 @@ import ws_login_flaskr.stats.traffic_times
 import ws_login_flaskr.stats.projects_by_type
 import ws_login_flaskr.stats.equipment_stats
 import ws_login_flaskr.stats.new_users_by_month
+import ws_login_flaskr.stats.visits_by_week
 
 
 
