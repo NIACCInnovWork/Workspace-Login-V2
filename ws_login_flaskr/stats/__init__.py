@@ -26,6 +26,7 @@ import ws_login_flaskr.stats.equipment_stats
 import ws_login_flaskr.stats.new_users_by_month
 import ws_login_flaskr.stats.visits_by_week
 import ws_login_flaskr.stats.workspace_stats
+import ws_login_flaskr.stats.equipment_usage_over_time
 
 
 
