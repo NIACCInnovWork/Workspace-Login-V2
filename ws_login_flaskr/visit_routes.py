@@ -2,10 +2,18 @@ import flask
 from typing import List, Dict
 import datetime as dt
 
+from ws_login_domain import Project, ProjectType
+from ws_login_domain.requests import SignoutRequest, ExistingProjectWorkSession
+
 from ws_login_flaskr.db import get_db
-from ws_login_domain.class_material_consumed import MaterialConsumed
-from ws_login_domain.class_project import Project, ProjectRepository, ProjectType
-from ws_login_domain.class_usage_log_entry import UsageLogEntry
+from ws_login_flaskr.repositories import VisitRepository, ProjectRepository
+
+# TODO still need to be refactored
+from ws_login_flaskr.repositories.class_material_consumed import MaterialConsumed
+from ws_login_flaskr.repositories.class_usage_log_entry import UsageLogEntry
+from ws_login_flaskr.repositories.class_visit_project import VisitProject
+from ws_login_flaskr.repositories.class_equipment_material import EquipmentMaterial
+from ws_login_flaskr.repositories.class_usage_log_entry import UsageLogEntry
 
 
 bp = flask.Blueprint('visits', __name__, url_prefix = '/api/visits')
@@ -72,7 +80,6 @@ def signout(visit_id: int):
 
         # This is a translation from the reuqest model into the db model. It is 
         # not the clenest right now, and really needs the db model to be refactored
-        print("Working sessions")
         for ex_project_session in signout_req.ep_worksession:
             project_update = VisitProject.create(get_db(), visit.visit_id, ex_project_session.project_id)
 
@@ -89,8 +96,6 @@ def signout(visit_id: int):
                             EquipmentMaterial.get_equipment_material_id(get_db(), eq_use_log.equipment_id, mat_used.material_id),
                             eq_log.usage_log_id
                     )
-
-            print(ex_project_session)
 
         get_db().commit()
         return "ok"

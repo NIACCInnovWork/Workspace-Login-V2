@@ -92,6 +92,10 @@ class TestVisitApiEndpoints(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.api_client.close()
+    
+    def test_fetch_all_visits(self):
+        visits = self.api_client.get_visits()
+        self.assertGreater(len(visits), 0)
 
     def test_fetch_visits_for_user(self):
         anthony = self.api_client.get_user(self.api_client.get_users(name="Anthony Riesen")[0].id)

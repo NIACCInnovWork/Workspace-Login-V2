@@ -29,7 +29,6 @@ import ws_login_flaskr.stats.workspace_stats
 import ws_login_flaskr.stats.equipment_usage_over_time
 
 
-
 @stat
 class TotalUsers:
     def __init__(self):

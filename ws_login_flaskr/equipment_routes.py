@@ -1,8 +1,10 @@
 import flask
 
+from ws_login_domain import Material
+
 from ws_login_flaskr.db import get_db
-from ws_login_domain.class_equipment import EquipmentRepository
-from ws_login_domain.class_material import Material, MaterialRepository
+from ws_login_flaskr.repositories import EquipmentRepository, MaterialRepository
+
 
 from typing import List, Dict
 

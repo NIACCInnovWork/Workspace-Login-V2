@@ -30,7 +30,7 @@ class SignoutRequest:
             for x in req.get('existingProjectWorkSessions', []) 
         ]
             
-        return SignoutRequest(np_ws, ep_ws)
+        return SignoutRequest(visit_id, np_ws, ep_ws)
 
     def to_dict(self):
         return {

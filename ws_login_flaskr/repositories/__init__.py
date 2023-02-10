@@ -1,0 +1,5 @@
+from ws_login_flaskr.repositories.user_repository import UserRepository
+from ws_login_flaskr.repositories.project_repository import ProjectRepository
+from ws_login_flaskr.repositories.visit_repository import VisitRepository
+from ws_login_flaskr.repositories.equipment_repository import EquipmentRepository
+from ws_login_flaskr.repositories.material_repository import MaterialRepository

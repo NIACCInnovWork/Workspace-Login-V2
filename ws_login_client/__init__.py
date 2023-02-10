@@ -55,6 +55,16 @@ class ApiClient:
             date_joined = resp["dateJoined"],
             user_type = UserType[resp["userType"]],
         )
+    
+    def get_visits(self) -> List[Visit]:
+        req = self.session.get(f"{self.root_url}/api/visits")
+        # TODO no error checking right now
+        resp = req.json()
+        return [
+            Visit(item["id"], item["userId"], item["startTime"], item["endTime"])
+            for item in resp
+        ]
+
 
     def get_visits_for(self, user: User, ongoing=None):
         params = {}

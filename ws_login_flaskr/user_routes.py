@@ -1,11 +1,10 @@
 import flask
 
-from ws_login_domain.class_visit import VisitRepository 
-from ws_login_domain.class_user import UserRepository, User, UserSummary, UserType
-from ws_login_domain.class_project import ProjectRepository
+from ws_login_flaskr.db import get_db
+from ws_login_flaskr.repositories import VisitRepository, UserRepository, ProjectRepository
+from ws_login_domain import  User, UserSummary, UserType
 
 from ws_login_domain.matchpolicy import MatchPolicy
-from ws_login_flaskr.db import get_db
 
 
 from typing import Dict

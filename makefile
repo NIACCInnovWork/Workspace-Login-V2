@@ -43,3 +43,11 @@ docker-test-push: docker-test-build
 
 deploy: docker-api-push docker-test-push
 	helm upgrade dev-workspace workspace-k8s -f workspace-k8s/values-dev.yaml --set image.tag=$(DOCKER_VERSION_TAG)
+
+
+####
+# Make Client
+####
+
+client-build:
+	python -m ws_login_scripts.build_client

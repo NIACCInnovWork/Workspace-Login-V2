@@ -4,4 +4,6 @@ config.py
 /plots/User_Type_Histogram.png
 /plots/Users Over Time.png
 
+/build/
+
 **/*.pyc

@@ -1,8 +1,7 @@
 import flask
 
 from ws_login_flaskr.db import get_db
-from ws_login_domain.class_project import ProjectRepository
-from ws_login_domain.class_user import UserRepository
+from ws_login_flaskr.repositories import ProjectRepository, UserRepository
 
 bp = flask.Blueprint('projects', __name__, url_prefix = '/api/projects')
 

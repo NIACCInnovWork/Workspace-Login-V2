@@ -1,18 +1,6 @@
-"""
-NIACC Innovation Workspace Login V2
-This file defines the 'Equipment' class.
-Author: Anthony Riesen
-"""
-from dataclasses import dataclass
-from typing import List, Optional
-
-
+from ws_login_domain import Equipment
 from ws_login_flaskr.db import MySQLConnection
-
-@dataclass
-class Equipment:
-    equipment_id: int
-    equipment_name: str
+from typing import List, Optional
 
 class EquipmentRepository:
     def __init__(self, conn: MySQLConnection):

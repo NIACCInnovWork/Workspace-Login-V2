@@ -18,7 +18,7 @@ class TrafficTimes:
         # This is just going to pull all visits and agregate them to make the 
         # logic easier, this will undoutedly need to be made more efficent in 
         # the future.
-        sql = "SELECT start_time, end_time FROM visits;"
+        sql = "SELECT start_time, end_time FROM visits WHERE end_time IS NOT NULL;"
 
         agg = {
             1: [0] * 24, # Sunday
