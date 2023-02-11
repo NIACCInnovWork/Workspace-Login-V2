@@ -7,13 +7,18 @@ Author: Anthony Riesen
 import tkinter as tk
 # from PIL import Image, ImageTK
 import tkinter.messagebox
+import os
 
 import ws_login_ui.user_interface.sign_in_window as sign_in_window
 import ws_login_ui.user_interface.new_user_window as new_user_window
 import ws_login_ui.user_interface.sign_out_window as sign_out_window
+from ws_login_ui.utils import ReocurringTimer
 
 from ws_login_client import ApiClient
 from ws_login_domain import Visit
+
+import threading 
+
 
 class MainPage(tk.Frame):
 
@@ -26,22 +31,37 @@ class MainPage(tk.Frame):
         # Create Logged In Frame #####################################################################
         logged_in_frame = tk.LabelFrame(self, text="Logged In")
 
-        # Pull Data
-        self.users_logged_in = self.api_client.get_users(ongoing=True)
-
         # Create listbox & scrollbar
         scrollbar = tk.Scrollbar(logged_in_frame, orient="vertical")
         self.logged_in_listbox = tk.Listbox(logged_in_frame, yscrollcommand=scrollbar.set, height=15)
 
-        # Populate listbox
-        for index, visitor in enumerate(self.users_logged_in):
-            self.logged_in_listbox.insert(index, visitor.name)
+        def populate_login():
+            # Pull Data
+            self.users_logged_in = self.api_client.get_users(ongoing=True)
 
-        # Configure & pack listbox/scrollbar
-        scrollbar.config(command=self.logged_in_listbox.yview)
-        scrollbar.pack(side="right", fill=tk.Y)
-        self.logged_in_listbox.pack(side="left", fill="both", expand=1)
-        logged_in_frame.grid(row=0, column=0, rowspan=2, padx=10, pady=10)
+            selected_name = None
+            index = self.logged_in_listbox.curselection()
+            if index != ():
+                selected_name = self.logged_in_listbox.get(index)
+
+            # Clean out box
+            self.logged_in_listbox.delete(0, self.logged_in_listbox.size())
+
+            # Populate listbox
+            for index, visitor in enumerate(self.users_logged_in):
+                self.logged_in_listbox.insert(index, visitor.name)
+                if visitor.name == selected_name:
+                    self.logged_in_listbox.selection_set(index)
+
+            # Configure & pack listbox/scrollbar
+            scrollbar.config(command=self.logged_in_listbox.yview)
+            scrollbar.pack(side="right", fill=tk.Y)
+            self.logged_in_listbox.pack(side="left", fill="both", expand=1)
+            logged_in_frame.grid(row=0, column=0, rowspan=2, padx=10, pady=10)
+        
+        refresh_interval = float(os.environ.get("REFRESH_INTERVAL", "30"))
+        self.refresh_thread = ReocurringTimer(refresh_interval, populate_login)
+        self.refresh_thread.start()
 
         # Create Logo Frame #####################################################################
         logo_frame = tk.LabelFrame(self, text="Workspace Logo")
@@ -71,6 +91,7 @@ class MainPage(tk.Frame):
         Opens the SignIn Page Frame within the main window.
         :return: none
         """
+        self.refresh_thread.cancel()
         self.destroy()
         sign_in_window.SignInPage(self.parent, self.controller, self.api_client)
 
@@ -79,6 +100,7 @@ class MainPage(tk.Frame):
         Opens the New User Page Frame within the main window.
         :return:
         """
+        self.refresh_thread.cancel()
         self.destroy()
         new_user_window.NewUserPage(self.parent, self.controller, self.api_client)
 
@@ -94,6 +116,7 @@ class MainPage(tk.Frame):
             selected_name = self.logged_in_listbox.get(index)
             selected_id = self.users_logged_in[index[0]].id
             selected_user = self.api_client.get_user(selected_id)
+            self.refresh_thread.cancel()
             self.destroy()
             # user_interface.sign_out_window.SignOutPage(self.parent, self.controller, selected_name)
             sign_out_window.SignOutPage(self.parent, self.controller, self.api_client, selected_user)

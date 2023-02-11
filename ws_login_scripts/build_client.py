@@ -41,6 +41,7 @@ from pathlib import Path
 
 os.environ['API_HOST'] = '{{ API Host goes here }}'
 os.environ['API_TOKEN'] = '{{ API toekn goes here }}'
+os.environ['POLL_INTERVAL'] = 30 # seconds
 
 script_location = Path(sys.argv[0])
 
