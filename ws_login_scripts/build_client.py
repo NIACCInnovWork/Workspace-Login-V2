@@ -54,12 +54,8 @@ ws_login_ui.launch()
     # mark file as executable
     os.chmod(launch_script, os.stat(launch_script).st_mode | stat.S_IEXEC)
 
-
     print("Compressing Artifact")
-    sp.run(
-        ['zip', '-r', 'ws_client.zip', build_dir.name],
-        cwd=build_dir.parent
-    )
+    shutil.make_archive(build_dir.parent / 'ws_client', 'zip', build_dir)
 
     print("Done")
 
