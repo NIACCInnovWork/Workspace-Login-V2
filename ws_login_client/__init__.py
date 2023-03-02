@@ -1,7 +1,9 @@
 import requests
+from typing import List, Optional, Dict
+import datetime as dt
+
 from ws_login_domain import * 
 from ws_login_domain.requests import SignoutRequest
-from typing import List, Optional, Dict
 
 
 class UnknownStatError(Exception):
@@ -37,23 +39,25 @@ class ApiClient:
         return User(
             user_id = resp["userId"],
             name = resp["name"],
-            date_joined = resp["dateJoined"],
+            date_joined = dt.datetime.fromisoformat(resp["dateJoined"]),
             user_type = UserType[resp["userType"]],
         )
 
-    def create_user(self, name: str, user_type: UserType):
-        req = self.session.post(f"{self.root_url}/api/users", 
-            json={
-                "name": name, 
-                "type": user_type.name,
-            }
-        )
-        resp = req.json()
+    def create_user(self, name: str, user_type: UserType, date_joined: Optional[dt.datetime]):
+        new_user_req = {
+            "name": name, 
+            "type": user_type.name,
+        }
+        if date_joined:
+            new_user_req["dateJoined"] = date_joined.isoformat()
+
+        resp = self.session.post(f"{self.root_url}/api/users", json=new_user_req)
+        resp_json = resp.json()
         return User(
-            user_id = resp["userId"],
-            name = resp["name"],
-            date_joined = resp["dateJoined"],
-            user_type = UserType[resp["userType"]],
+            user_id = resp_json["userId"],
+            name = resp_json["name"],
+            date_joined = dt.datetime.fromisoformat(resp_json["dateJoined"]),
+            user_type = UserType[resp_json["userType"]],
         )
     
     def get_visits(self) -> List[Visit]:

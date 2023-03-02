@@ -1,4 +1,5 @@
 import flask
+import datetime as dt
 
 from ws_login_flaskr.db import get_db
 from ws_login_flaskr.repositories import VisitRepository, UserRepository, ProjectRepository
@@ -15,7 +16,7 @@ bp = flask.Blueprint('users', __name__, url_prefix = '/api/users')
 def _user_to_response(host_url, user: User):
     return {
         "userId": user.user_id,
-        "dateJoined": user.date_joined,
+        "dateJoined": user.date_joined.isoformat(),
         "name": user.name,
         "userType": user.user_type.name,
         "visitsRef": f"{host_url}api/users/{user.user_id}/visits",
@@ -52,13 +53,13 @@ def get_users():
 @bp.post('')
 def create_user():
     new_user_json = flask.request.json
-    print(new_user_json)
 
     if 'id' in new_user_json or 'name' not in new_user_json or 'type' not in new_user_json:
         return flask.abort(400, "Feild requirements not satisfied")
 
     user_repo = UserRepository(get_db())
-    user = user_repo.create(new_user_json['name'], UserType[new_user_json['type']])
+    date_joined = dt.datetime.fromisoformat(new_user_json['dateJoined']) if 'dateJoined' in new_user_json else dt.datetime.now()
+    user = user_repo.create(new_user_json['name'], UserType[new_user_json['type']], date_joined)
 
     return _user_to_response(flask.request.host_url, user)
 
