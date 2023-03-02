@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ws-login-{{ .Values.environment }}-api
+  labels:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: ws-login
+    app.kubernetes.io/environment: {{ .Values.environment }} 
+    app.kubernetes.io/managed-by: helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: ws-login-{{ .Values.environment }}-api-deployment
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: api-server
+        app.kubernetes.io/component: api
+        app.kubernetes.io/part-of: ws-login
+        app.kubernetes.io/environment: {{ .Values.environment }} 
+        app.kubernetes.io/managed-by: ws-login-{{ .Values.environment }}-api-deployment
+    spec:
+      serviceAccountName: {{ include "workspace-k8s.serviceAccountName" . }}
+      imagePullSecrets:
+        - name: workspace-login-app
+      containers:
+        - name: {{ .Chart.Name }}
+          image: registry.digitalocean.com/workspace-login-app/web-app:{{ .Values.image.tag }}
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: ws-login-{{ .Values.environment }}-db
+            - name: DB_USER
+              value: root
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ws-login-{{ .Values.environment }}-db
+                  key: mysql-root-password
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ws-login-{{ .Values.environment }}-api-token
+                  key: api-token
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/healthcheck
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/healthcheck
+              port: http

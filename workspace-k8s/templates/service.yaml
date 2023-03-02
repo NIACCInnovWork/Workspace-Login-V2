@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ws-login-{{ .Values.environment }}-api
+  labels:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: ws-login
+    app.kubernetes.io/environment: {{ .Values.environment }} 
+    app.kubernetes.io/managed-by: helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/part-of: ws-login
+    app.kubernetes.io/environment: {{ .Values.environment }}

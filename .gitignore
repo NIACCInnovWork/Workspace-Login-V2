@@ -1,1 +1,9 @@
 config.py
+/exported_reports/Workspace Report.pdf
+/plots/User Type Pie Chart.png
+/plots/User_Type_Histogram.png
+/plots/Users Over Time.png
+
+/build/
+
+**/*.pyc

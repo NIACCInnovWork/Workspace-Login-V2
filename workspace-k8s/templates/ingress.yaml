@@ -1,0 +1,42 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ws-login-{{ .Values.environment }}-api
+  labels:
+    app.kubernetes.io/name: api-server
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: ws-login
+    app.kubernetes.io/environment: {{ .Values.environment }} 
+    app.kubernetes.io/managed-by: helm
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+      {{- if eq "prod" .Values.environment }}
+      - workspace-login.riesenlabs.com
+      {{ else }}
+      - {{ .Values.environment }}.workspace-login.riesenlabs.com
+      {{- end }}
+      secretName: ws-{{ .Values.environment }}-tls
+  rules:
+    {{- if eq "prod" .Values.environment }}
+    - host: workspace-login.riesenlabs.com
+    {{ else }}
+    - host: {{ .Values.environment }}.workspace-login.riesenlabs.com
+    {{- end }}
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ws-login-{{ .Values.environment }}-api
+                port: 
+                  number: 80
+{{- end }}
+  
+
+
