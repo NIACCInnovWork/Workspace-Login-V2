@@ -1,5 +1,5 @@
 from ws_login_domain import User, Visit
-from ws_login_domain.matchpolicy import MatchPolicy
+from ws_login_flaskr.repositories.matchpolicy import VisitMatchPolicy
 
 from ws_login_flaskr.db import MySQLConnection
 
@@ -67,7 +67,7 @@ class VisitRepository:
 
         return Visit(row[0], row[1], row[2], row[3])
 
-    def load_by_user(self, user: User, match: MatchPolicy=MatchPolicy.ALL()):
+    def load_by_user(self, user: User, match: VisitMatchPolicy=VisitMatchPolicy.ALL()):
         """
         This method allows the loading of a particular visit by the user's name.
 

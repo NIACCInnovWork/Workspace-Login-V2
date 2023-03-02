@@ -4,7 +4,7 @@ from ws_login_flaskr.db import get_db
 from ws_login_flaskr.repositories import VisitRepository, UserRepository, ProjectRepository
 from ws_login_domain import  User, UserSummary, UserType
 
-from ws_login_domain.matchpolicy import MatchPolicy
+from ws_login_flaskr.repositories.matchpolicy import UserMatchPolicy, VisitMatchPolicy
 
 
 from typing import Dict
@@ -34,11 +34,11 @@ def _user_summary_to_response(host_url, user: UserSummary):
 def get_users():
     user_repo = UserRepository(get_db())
 
-    match_policy = MatchPolicy.ALL()
+    match_policy = UserMatchPolicy.ALL()
     if flask.request.args.get("ongoing") == 'true':
-        match_policy = MatchPolicy.ONGOING()
+        match_policy = UserMatchPolicy.ONGOING()
     elif flask.request.args.get("ongoing") == 'false':
-        match_policy = MatchPolicy.NOT_ONGOING()
+        match_policy = UserMatchPolicy.NOT_ONGOING()
 
     if "name" in flask.request.args:
         match_policy = match_policy.with_name(flask.request.args["name"])
@@ -95,11 +95,11 @@ def get_visits(user_id: int):
     user_repo = UserRepository(get_db())
     visit_repo = VisitRepository(get_db())
 
-    match_policy = MatchPolicy.ALL()
+    match_policy = VisitMatchPolicy.ALL()
     if flask.request.args.get("ongoing") == 'true':
-        match_policy = MatchPolicy.ONGOING()
+        match_policy = VisitMatchPolicy.ONGOING()
     elif flask.request.args.get("ongoing") == 'false':
-        match_policy = MatchPolicy.NOT_ONGOING()
+        match_policy = VisitMatchPolicy.NOT_ONGOING()
 
     user = user_repo.load(user_id)
     visits = visit_repo.load_by_user(user, match_policy)

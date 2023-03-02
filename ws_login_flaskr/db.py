@@ -11,6 +11,7 @@ def get_db() -> MySQLConnection:
 
     :return: New db session
     """
+    print("Using Password: ", os.environ.get("DB_PASSWORD"))
     if 'db' not in g:
         g.db = MySQLConnection(
             host=os.environ.get("DB_HOST", "127.0.0.1"),    # Location of Database

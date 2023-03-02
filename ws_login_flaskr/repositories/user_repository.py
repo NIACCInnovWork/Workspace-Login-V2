@@ -1,5 +1,5 @@
 from ws_login_domain import UserType, User, UserSummary
-from ws_login_domain.matchpolicy import MatchPolicy
+from ws_login_flaskr.repositories.matchpolicy import UserMatchPolicy
 from ws_login_flaskr.db import MySQLConnection
 
 from typing import List
@@ -66,7 +66,7 @@ class UserRepository:
 
         return user
 
-    def get_all_visitors(self, match: MatchPolicy = MatchPolicy.ALL()) -> List[UserSummary]:
+    def get_all_visitors(self, match: UserMatchPolicy = UserMatchPolicy.ALL()) -> List[UserSummary]:
         """
         Method to select all visitors from the database.
         :param database: Workspace Login Database from which the user is loaded
@@ -74,7 +74,9 @@ class UserRepository:
         """
         my_cursor = self.conn.cursor()
         sql_load_names_command = f"SELECT users.user_id, users.name FROM users WHERE true {match.users_sql}"
-        my_cursor.execute(sql_load_names_command)
+        print(sql_load_names_command)
+        print([*match.bind_vars])
+        my_cursor.execute(sql_load_names_command, [*match.bind_vars])
 
         return [UserSummary(rec[0], rec[1]) for rec in my_cursor.fetchall()]
 
