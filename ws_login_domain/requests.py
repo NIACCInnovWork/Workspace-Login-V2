@@ -1,6 +1,6 @@
 import datetime as dt
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 from ws_login_domain import Visit, ProjectType, Project, Equipment, Material
 
 class SignoutRequest:
@@ -9,14 +9,18 @@ class SignoutRequest:
             visit_id: int,
             np_worksession: List['NewProjectWorkSession'], 
             ep_worksession: List['ExistingProjectWorkSession'],
+            signout_time: Optional[dt.datetime] = None,
     ) -> None:
+        """ Please use the "for_visit" factory function.
+        """
         self.visit_id = visit_id
         self.np_worksession = np_worksession
         self.ep_worksession = ep_worksession
+        self.signout_time = signout_time
    
     @staticmethod
-    def for_visit(visit: Visit) -> 'SignoutRequest':
-        return SignoutRequest(visit.visit_id, [], [])
+    def for_visit(visit: Visit, signout_time: Optional[dt.datetime] = None) -> 'SignoutRequest':
+        return SignoutRequest(visit.visit_id, [], [], signout_time)
 
     @staticmethod
     def from_dict(visit_id: int, req: Dict) -> 'SignoutRequest':
@@ -29,14 +33,18 @@ class SignoutRequest:
             ExistingProjectWorkSession.from_dict(x) 
             for x in req.get('existingProjectWorkSessions', []) 
         ]
+        signout_time = dt.datetime.fromisoformat(req['signoutTime']) if req.get('signoutTime') else None
             
-        return SignoutRequest(visit_id, np_ws, ep_ws)
+        return SignoutRequest(visit_id, np_ws, ep_ws, signout_time)
 
     def to_dict(self):
-        return {
+        d = {
                 "newProjectWorkSessions": [ x.to_dict() for x in self.np_worksession ],
                 "existingProjectWorkSessions": [ x.to_dict() for x in self.ep_worksession ],
         }
+        if self.signout_time:
+            d['signoutTime'] = self.signout_time.isoformat()
+        return d
 
     def with_new_project(self, name: str, description: str, type: ProjectType) -> 'NewProjectWorkSession':
         session = NewProjectWorkSession(NewProjectReq(name, description, type), [])

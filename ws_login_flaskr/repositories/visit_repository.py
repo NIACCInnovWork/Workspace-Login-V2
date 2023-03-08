@@ -11,16 +11,16 @@ class VisitRepository:
     def __init__(self, conn: MySQLConnection):
         self.conn = conn
 
-    def create_for(self, user: User):
+    def create_for(self, user: User, start_time: dt.datetime):
         """
         Method to create a new visit in the database. Static method so that it can be called independent of a specific
         object.  Calls out to the 'load' method after creating the visit in the database.
 
-        :param database: Workspace Login Database in which the visit is added
         :param user_id: Primary Key of the user who created this visit
+        :param start_time: The time at which the visit started. (Generally This
+            is the current time)
         :return: Visit object of the visit just added to the database
         """
-        start_time = dt.datetime.now()
         curr = self.conn.cursor()
         sql_create_command = "INSERT INTO visits (user_id, start_time) VALUES (%s, %s)"
         curr.execute(sql_create_command, (user.user_id, start_time))

@@ -1,9 +1,10 @@
-import requests
 from typing import List, Optional, Dict
 import datetime as dt
 
 from ws_login_domain import * 
 from ws_login_domain.requests import SignoutRequest
+
+import requests
 
 
 class UnknownStatError(Exception):
@@ -77,17 +78,29 @@ class ApiClient:
         req = self.session.get(f"{self.root_url}/api/users/{user.user_id}/visits", params=params)
         # TODO no error checking right now
         resp = req.json()
+
         return [
-            Visit(item["id"], user.user_id, item["startTime"], item["endTime"])
+            Visit(
+                item["id"], 
+                user.user_id, 
+                dt.datetime.fromisoformat(item["startTime"]),
+                dt.datetime.fromisoformat(item["endTime"]) if item.get("endTime") else None, 
+            )
             for item in resp
         ]
     
 
-    def create_visit_for(self, user: User) -> Visit:
-        req = self.session.post(f"{self.root_url}/api/users/{user.user_id}/visits")
+    def create_visit_for(self, user: User, start_time: Optional[dt.datetime] = None) -> Visit:
+        req_body = { "startTime": start_time.isoformat() } if start_time else {}
+        req = self.session.post(f"{self.root_url}/api/users/{user.user_id}/visits", json=req_body)
         # TODO no error checking right now
         item = req.json()
-        return Visit(item["id"], user.user_id, item["startTime"], item["endTime"])
+        return Visit(
+            item["id"], 
+            user.user_id, 
+            dt.datetime.fromisoformat(item["startTime"]), 
+            None, # always none if visit was just created
+        )
 
     def get_equipment(self) -> List[Equipment]:
         req = self.session.get(f"{self.root_url}/api/equipment")

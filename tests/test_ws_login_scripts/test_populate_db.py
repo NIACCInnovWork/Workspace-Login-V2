@@ -4,8 +4,10 @@ import datetime as dt
 from faker import Faker
 from typing import Optional
 
-from ws_login_domain import User, UserType
-from ws_login_scripts.populate_db import UserFactory
+from ws_login_domain import User, UserType, Equipment, Material, Visit
+from ws_login_domain.requests import SignoutRequest
+from ws_login_scripts.populate_db import UserFactory, EquipmentAndMaterials
+import ws_login_scripts.populate_db as script
 
 
 def fake_user_gen(name: str, user_type: UserType, date_joined: Optional[dt.datetime] = None):
@@ -42,4 +44,54 @@ class TestUserFactory(unittest.TestCase):
         all_users = [ user for user in user_factory ]
 
         self.assertEqual(5, len(all_users))
+
+
+class TestEquipmentAndMaterials(unittest.TestCase):
+    def test_contains_eq_and_materials(self):
+        equipment = Equipment(5, "foobar")
+        material = Material(2, "something", "in2")
+
+        eq = EquipmentAndMaterials(equipment, [material])
+
+        self.assertEqual(eq.equipment, equipment)
+        self.assertEqual(eq.material, [material])
+
+
+class TestFetchEquipmentAndMaterials(unittest.TestCase):
+    def test_fetch_equipment_from_api(self):
+        equipment = Equipment(5, "foobar")
+        material = Material(2, "something", "in2")
+
+        api_client = Mock()
+        api_client.get_equipment.return_value = [equipment]
+        api_client.get_materials_for.return_value = [material]
+
+        result = script.fetch_equipment_and_materials(api_client)
+
+        self.assertEqual([EquipmentAndMaterials(equipment, [material])], result)
+        api_client.get_materials_for.assert_called_with(equipment)
+
+def create_fake_visit(user: User, start_time: Optional[dt.datetime]):
+    # Check expected time range
+    assert user.date_joined < start_time and start_time < dt.datetime.now()
+    return Visit(1, user.user_id, start_time, None)
+
+def fake_signout(req: SignoutRequest):
+    assert req.signout_time is not None
+    assert len(req.np_worksession) > 0
+
+
+class TestGenerateVisitForUser(unittest.TestCase):
+    def test_generate_visit_for_user(self):
+        api_client = Mock()
+        api_client.create_visit_for.side_effect = create_fake_visit
+        api_client.signout.side_effect = fake_signout
+
+        user = User(1, dt.datetime(2022, 1, 1), "foobar", UserType.Student)
+        eq = Equipment(1, "something")
+        mat = Material(1, "some-material", "g")
+        script.generate_visit_for_user(api_client, Faker(), [EquipmentAndMaterials(eq, [mat])], user)
+
+        api_client.create_visit_for.assert_called()
+        api_client.signout.assert_called()
 
