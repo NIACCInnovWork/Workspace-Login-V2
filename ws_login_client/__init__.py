@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 import datetime as dt
 
 from ws_login_domain import * 
@@ -116,7 +116,14 @@ class ApiClient:
         req = self.session.get(f"{self.root_url}/api/projects")
         return [ProjectSummary(rec["id"], rec["name"]) for rec in req.json()]
 
-    def get_project(self, project_id: int) -> Optional[Project]:
+    def get_project(self, proj: Union[int, ProjectSummary]) -> Optional[Project]:
+        """ Fetches a project from the web service
+
+        Projects may either be specified by a ProjectSummary or by id directly.
+        Use of the ProjectSummary is prefered as a way to stay in the domain 
+        model.
+        """
+        project_id = proj.id if type(proj) == ProjectSummary else proj
         req = self.session.get(f"{self.root_url}/api/projects/{project_id}")
         try:
             rec = req.json()

@@ -4,7 +4,7 @@ import datetime as dt
 from faker import Faker
 from typing import Optional
 
-from ws_login_domain import User, UserType, Equipment, Material, Visit
+from ws_login_domain import User, UserType, Equipment, Material, Visit, ProjectSummary, Project, ProjectType
 from ws_login_domain.requests import SignoutRequest
 from ws_login_scripts.populate_db import UserFactory, EquipmentAndMaterials
 import ws_login_scripts.populate_db as script
@@ -71,6 +71,39 @@ class TestFetchEquipmentAndMaterials(unittest.TestCase):
         self.assertEqual([EquipmentAndMaterials(equipment, [material])], result)
         api_client.get_materials_for.assert_called_with(equipment)
 
+
+class TestSelectWorkSessions(unittest.TestCase):
+    def test_creates_new_project_if_none_exist(self):
+        api_client = Mock()
+        api_client.get_projects_for.return_value = []
+        api_client.get_projects.return_value = []
+
+        user = User(1, dt.datetime(2022, 1, 1), "foobar", UserType.Student)
+        visit = Visit(1, user.user_id, dt.datetime.now(), None)
+        signout_req = SignoutRequest.for_visit(visit)
+
+        ws = script.generate_worksession(api_client, Faker(), signout_req, user)
+
+        self.assertIsNotNone(ws)
+        self.assertTrue(ws in signout_req.np_worksession)
+
+    def test_if_projects_exist_an_existing_project_is_used(self):
+        api_client = Mock()
+        api_client.get_projects_for.return_value = [ProjectSummary(1, "foobar")]
+        api_client.get_projects.return_value = [ProjectSummary(1, "foobar")]
+        api_client.get_project.return_value = Project(1, "foobar", "description", ProjectType.Personal)
+
+        user = User(1, dt.datetime(2022, 1, 1), "foobar", UserType.Student)
+        visit = Visit(1, user.user_id, dt.datetime.now(), None)
+        signout_req = SignoutRequest.for_visit(visit)
+
+        ws = script.generate_worksession(api_client, Faker(), signout_req, user)
+
+        self.assertIsNotNone(ws)
+        self.assertTrue(ws in signout_req.ep_worksession)
+
+
+
 def create_fake_visit(user: User, start_time: Optional[dt.datetime]):
     # Check expected time range
     assert user.date_joined < start_time and start_time < dt.datetime.now()
@@ -85,6 +118,8 @@ class TestGenerateVisitForUser(unittest.TestCase):
     def test_generate_visit_for_user(self):
         api_client = Mock()
         api_client.create_visit_for.side_effect = create_fake_visit
+        api_client.get_projects_for.return_value = []
+        api_client.get_projects.return_value = []
         api_client.signout.side_effect = fake_signout
 
         user = User(1, dt.datetime(2022, 1, 1), "foobar", UserType.Student)

@@ -1,6 +1,6 @@
 import datetime as dt
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 from ws_login_domain import Visit, ProjectType, Project, Equipment, Material
 
 class SignoutRequest:
@@ -45,6 +45,9 @@ class SignoutRequest:
         if self.signout_time:
             d['signoutTime'] = self.signout_time.isoformat()
         return d
+
+    def __contains__(self, ws: Union['NewProjectWorkSession', 'ExistingProjectWorkSession']):
+        return ws in self.np_worksession or ws in self.ep_worksession
 
     def with_new_project(self, name: str, description: str, type: ProjectType) -> 'NewProjectWorkSession':
         session = NewProjectWorkSession(NewProjectReq(name, description, type), [])
