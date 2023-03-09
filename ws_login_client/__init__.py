@@ -1,7 +1,10 @@
-import requests
+from typing import List, Optional, Dict, Union
+import datetime as dt
+
 from ws_login_domain import * 
 from ws_login_domain.requests import SignoutRequest
-from typing import List, Optional, Dict
+
+import requests
 
 
 class UnknownStatError(Exception):
@@ -37,23 +40,25 @@ class ApiClient:
         return User(
             user_id = resp["userId"],
             name = resp["name"],
-            date_joined = resp["dateJoined"],
+            date_joined = dt.datetime.fromisoformat(resp["dateJoined"]),
             user_type = UserType[resp["userType"]],
         )
 
-    def create_user(self, name: str, user_type: UserType):
-        req = self.session.post(f"{self.root_url}/api/users", 
-            json={
-                "name": name, 
-                "type": user_type.name,
-            }
-        )
-        resp = req.json()
+    def create_user(self, name: str, user_type: UserType, date_joined: Optional[dt.datetime]):
+        new_user_req = {
+            "name": name, 
+            "type": user_type.name,
+        }
+        if date_joined:
+            new_user_req["dateJoined"] = date_joined.isoformat()
+
+        resp = self.session.post(f"{self.root_url}/api/users", json=new_user_req)
+        resp_json = resp.json()
         return User(
-            user_id = resp["userId"],
-            name = resp["name"],
-            date_joined = resp["dateJoined"],
-            user_type = UserType[resp["userType"]],
+            user_id = resp_json["userId"],
+            name = resp_json["name"],
+            date_joined = dt.datetime.fromisoformat(resp_json["dateJoined"]),
+            user_type = UserType[resp_json["userType"]],
         )
     
     def get_visits(self) -> List[Visit]:
@@ -73,17 +78,29 @@ class ApiClient:
         req = self.session.get(f"{self.root_url}/api/users/{user.user_id}/visits", params=params)
         # TODO no error checking right now
         resp = req.json()
+
         return [
-            Visit(item["id"], user.user_id, item["startTime"], item["endTime"])
+            Visit(
+                item["id"], 
+                user.user_id, 
+                dt.datetime.fromisoformat(item["startTime"]),
+                dt.datetime.fromisoformat(item["endTime"]) if item.get("endTime") else None, 
+            )
             for item in resp
         ]
     
 
-    def create_visit_for(self, user: User) -> Visit:
-        req = self.session.post(f"{self.root_url}/api/users/{user.user_id}/visits")
+    def create_visit_for(self, user: User, start_time: Optional[dt.datetime] = None) -> Visit:
+        req_body = { "startTime": start_time.isoformat() } if start_time else {}
+        req = self.session.post(f"{self.root_url}/api/users/{user.user_id}/visits", json=req_body)
         # TODO no error checking right now
         item = req.json()
-        return Visit(item["id"], user.user_id, item["startTime"], item["endTime"])
+        return Visit(
+            item["id"], 
+            user.user_id, 
+            dt.datetime.fromisoformat(item["startTime"]), 
+            None, # always none if visit was just created
+        )
 
     def get_equipment(self) -> List[Equipment]:
         req = self.session.get(f"{self.root_url}/api/equipment")
@@ -99,7 +116,14 @@ class ApiClient:
         req = self.session.get(f"{self.root_url}/api/projects")
         return [ProjectSummary(rec["id"], rec["name"]) for rec in req.json()]
 
-    def get_project(self, project_id: int) -> Optional[Project]:
+    def get_project(self, proj: Union[int, ProjectSummary]) -> Optional[Project]:
+        """ Fetches a project from the web service
+
+        Projects may either be specified by a ProjectSummary or by id directly.
+        Use of the ProjectSummary is prefered as a way to stay in the domain 
+        model.
+        """
+        project_id = proj.id if type(proj) == ProjectSummary else proj
         req = self.session.get(f"{self.root_url}/api/projects/{project_id}")
         try:
             rec = req.json()

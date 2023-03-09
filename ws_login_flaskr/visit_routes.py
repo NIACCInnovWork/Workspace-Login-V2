@@ -62,6 +62,8 @@ def signout(visit_id: int):
         visit = visit_repo.load_by_id(visit_id)
         if visit.is_ended():
             return flask.abort(400, "The selected visit is already ended.")
+
+        # Throws value error if attempting to set to an invalid date value
         visit.end_time = dt.datetime.now()
         visit_repo.update(visit)
 

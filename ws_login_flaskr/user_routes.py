@@ -1,4 +1,5 @@
 import flask
+import datetime as dt
 
 from ws_login_flaskr.db import get_db
 from ws_login_flaskr.repositories import VisitRepository, UserRepository, ProjectRepository
@@ -15,7 +16,7 @@ bp = flask.Blueprint('users', __name__, url_prefix = '/api/users')
 def _user_to_response(host_url, user: User):
     return {
         "userId": user.user_id,
-        "dateJoined": user.date_joined,
+        "dateJoined": user.date_joined.isoformat(),
         "name": user.name,
         "userType": user.user_type.name,
         "visitsRef": f"{host_url}api/users/{user.user_id}/visits",
@@ -52,13 +53,13 @@ def get_users():
 @bp.post('')
 def create_user():
     new_user_json = flask.request.json
-    print(new_user_json)
 
     if 'id' in new_user_json or 'name' not in new_user_json or 'type' not in new_user_json:
         return flask.abort(400, "Feild requirements not satisfied")
 
     user_repo = UserRepository(get_db())
-    user = user_repo.create(new_user_json['name'], UserType[new_user_json['type']])
+    date_joined = dt.datetime.fromisoformat(new_user_json['dateJoined']) if 'dateJoined' in new_user_json else dt.datetime.now()
+    user = user_repo.create(new_user_json['name'], UserType[new_user_json['type']], date_joined)
 
     return _user_to_response(flask.request.host_url, user)
 
@@ -107,8 +108,8 @@ def get_visits(user_id: int):
     return [
         {
             "id": visit.visit_id,
-            "startTime": visit.start_time,
-            "endTime": visit.end_time,
+            "startTime": visit.start_time.isoformat(),
+            "endTime": visit.end_time.isoformat() if visit.end_time else None,
         }
         for visit in visits
     ]
@@ -119,19 +120,22 @@ def create_visit(user_id: int):
     user_repo = UserRepository(get_db())
     visit_repo = VisitRepository(get_db())
 
+    new_visit_req = flask.request.json
+    visit_start_time = dt.datetime.fromisoformat(new_visit_req['startTime']) if 'startTime' in new_visit_req else dt.datetime.now()
+
     user = user_repo.load(user_id)
     if not user:
         return flask.abort(404, "The specified user was not found")
-    ongoing_visits = visit_repo.load_by_user(user, MatchPolicy.ONGOING())
+    ongoing_visits = visit_repo.load_by_user(user, VisitMatchPolicy.ONGOING())
     if ongoing_visits: 
         return flask.abort(400, "There is currently a visit in progress. That visit must be finished before creating a new one.")
 
-    visit = visit_repo.create_for(user)
+    visit = visit_repo.create_for(user, visit_start_time)
 
     return {
         "id": visit.visit_id,
-        "startTime": visit.start_time,
-        "endTime": visit.end_time,
+        "startTime": visit.start_time.isoformat(),
+        "endTime": visit.end_time.isoformat() if visit.end_time else None,
     }
 
 

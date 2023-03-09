@@ -3,12 +3,13 @@ from ws_login_flaskr.repositories.matchpolicy import UserMatchPolicy
 from ws_login_flaskr.db import MySQLConnection
 
 from typing import List
+import datetime as dt
 
 class UserRepository:
     def __init__(self, conn: MySQLConnection):
         self.conn = conn
 
-    def create(self, name: str, user_type: UserType):
+    def create(self, name: str, user_type: UserType, date_joined: dt.datetime):
         """
         Constructs a new user object from the supplied parameters and inserts it into the database
 
@@ -17,7 +18,6 @@ class UserRepository:
         :return: Newly constructed user
         """
         # Prepare Data for Database
-        date_joined = dt.datetime.now()
         curr = self.conn.cursor()
         sql_create_command = "INSERT INTO users (date_joined, name, user_type) VALUES (%s, %s, %s)"
         curr.execute(sql_create_command, (date_joined, name, user_type.value))
@@ -74,8 +74,6 @@ class UserRepository:
         """
         my_cursor = self.conn.cursor()
         sql_load_names_command = f"SELECT users.user_id, users.name FROM users WHERE true {match.users_sql}"
-        print(sql_load_names_command)
-        print([*match.bind_vars])
         my_cursor.execute(sql_load_names_command, [*match.bind_vars])
 
         return [UserSummary(rec[0], rec[1]) for rec in my_cursor.fetchall()]
