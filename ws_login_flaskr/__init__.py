@@ -1,5 +1,6 @@
 import flask
 import os
+import logging
 
 from urllib.parse import urlparse
 
@@ -7,6 +8,8 @@ from ws_login_flaskr.db import close_db
 
 
 def create_app():
+    logging.basicConfig()
+
     app = flask.Flask(__name__)
     app.teardown_appcontext(close_db)
 
