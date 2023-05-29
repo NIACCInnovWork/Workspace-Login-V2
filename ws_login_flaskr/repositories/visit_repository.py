@@ -55,7 +55,7 @@ class VisitRepository:
 
         return [Visit(row[0], row[1], row[2], row[3]) for row in rows] 
 
-    def load_by_id(self, visit_id: int) -> List[Visit]:
+    def load_by_id(self, visit_id: int) -> Visit:
         curr = self.conn.cursor()
         curr.execute("SELECT * FROM visits WHERE visit_id = %s", (visit_id,))
         row = curr.fetchone()

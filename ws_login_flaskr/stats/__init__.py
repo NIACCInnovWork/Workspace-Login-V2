@@ -9,6 +9,7 @@ import logging
 from typing import Dict, List
 
 from ws_login_flaskr.db import MySQLConnection, get_db
+from ws_login_flaskr.permission import has_permission
 
 bp = flask.Blueprint('stats', __name__, url_prefix='/api/stats')
 
@@ -108,6 +109,7 @@ def index() -> Dict[str, str]:
 
 
 @bp.get('/<stat_name>')
+@has_permission('view_stats')
 def executeStat(stat_name: str):
     if stat_name not in all_stats:
         return flask.abort(404, 'requested stat not found')

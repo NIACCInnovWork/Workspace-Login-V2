@@ -5,7 +5,7 @@ main application.
 from typing import List
 from fpdf import FPDF
 
-from reports.figures import Figure, FigureService
+from ws_login_reports.figures import Figure, FigureService
 from PIL import Image
 import datetime as dt
 

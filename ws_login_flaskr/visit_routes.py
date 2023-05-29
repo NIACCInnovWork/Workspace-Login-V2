@@ -1,4 +1,5 @@
 import flask
+import flask_login
 from typing import List, Dict
 import datetime as dt
 
@@ -7,6 +8,7 @@ from ws_login_domain.requests import SignoutRequest, ExistingProjectWorkSession
 
 from ws_login_flaskr.db import get_db
 from ws_login_flaskr.repositories import VisitRepository, ProjectRepository
+from ws_login_flaskr.permission import one_of, has_permission, not_anonymous
 
 # TODO still need to be refactored
 from ws_login_flaskr.repositories.class_material_consumed import MaterialConsumed
@@ -14,13 +16,35 @@ from ws_login_flaskr.repositories.class_usage_log_entry import UsageLogEntry
 from ws_login_flaskr.repositories.class_visit_project import VisitProject
 from ws_login_flaskr.repositories.class_equipment_material import EquipmentMaterial
 from ws_login_flaskr.repositories.class_usage_log_entry import UsageLogEntry
+from ws_login_flaskr.repositories.user_repository import UserRepository
 
 
 bp = flask.Blueprint('visits', __name__, url_prefix = '/api/visits')
 
 @bp.get('')
+@one_of(not_anonymous, has_permission('admin'))
 def get_visits():
+    """ List all visits which the user has permission to see.
+
+    Permissions
+    -----------
+    Admin users have permission to see all visits within the system.  Non-admin
+    users may only see visits for themselves. Annonymous users may not see 
+    anything.
+    """
+    user_repo = UserRepository(get_db())
     visit_repo = VisitRepository(get_db())
+
+    visits = []
+    if flask_login.current_user.has_permission('admin'):
+        # If the user is an admin, they can see all visits
+        visits = visit_repo.load_all()
+    else:
+        # If the user is not an admin, they can only see their own visits
+        user = user_repo.load(int(flask_login.current_user.get_id()))
+        if user:
+            visits = visit_repo.load_by_user(user)
+
     return [
         {
             "id": visit.visit_id,
@@ -29,7 +53,7 @@ def get_visits():
             "startTime": visit.start_time,
             "endTime": visit.end_time,
         }
-        for visit in visit_repo.load_all()
+        for visit in visits
     ]
 
 @bp.get('<visit_id>')

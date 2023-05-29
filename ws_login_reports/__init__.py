@@ -1,2 +1,2 @@
-from reports.pdf_reports import ReportService
-from reports.figures import FigureService
+from ws_login_reports.pdf_reports import ReportService
+from ws_login_reports.figures import FigureService

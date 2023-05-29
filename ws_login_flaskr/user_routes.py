@@ -1,4 +1,6 @@
 import flask
+import flask_login
+import logging
 import datetime as dt
 
 from ws_login_flaskr.db import get_db
@@ -6,10 +8,11 @@ from ws_login_flaskr.repositories import VisitRepository, UserRepository, Projec
 from ws_login_domain import  User, UserSummary, UserType
 
 from ws_login_flaskr.repositories.matchpolicy import UserMatchPolicy, VisitMatchPolicy
-
+from ws_login_flaskr.permission import SystemUser
 
 from typing import Dict
 
+logger = logging.getLogger(__name__)
 bp = flask.Blueprint('users', __name__, url_prefix = '/api/users')
 
 
@@ -52,7 +55,7 @@ def get_users():
 
 @bp.post('')
 def create_user():
-    new_user_json = flask.request.json
+    new_user_json: Dict[str, Any] = flask.request.json
 
     if 'id' in new_user_json or 'name' not in new_user_json or 'type' not in new_user_json:
         return flask.abort(400, "Feild requirements not satisfied")
@@ -90,9 +93,57 @@ def get_user(user_id):
         flask.abort(404)
     return _user_to_response(flask.request.host_url, user)
 
+@bp.get("/current")
+def get_current_user():
+    """ Returns the current user which is logged in.
+
+    The user may be logged in by providing the userId as a query parameter.  
+    This is intentionally left here in order to allow a browser to login with a
+    GET request instead of requireing a UI to create a PUT or POST request.
+
+    The prefered method for logging in is the post request.
+    """
+    user_repo = UserRepository(get_db())
+    
+    if 'userId' in flask.request.args:
+        user_id = int(flask.request.args.get('userId'))
+        user = user_repo.load(user_id)
+        if user is None:
+            flask.abort(404)
+        flask_login.login_user(SystemUser(user.user_id, user.name, [], False))
+        logger.info(f"User logged in. id: {user.user_id}, name: {user.name}")
+        return _user_to_response(flask.request.host_url, user)
+
+    if flask_login.current_user:
+        user = user_repo.load(flask_login.current_user.get_id())
+        if user:
+            return _user_to_response(flask.request.host_url, user)
+
+    flask.abort(404)
+
+@bp.put('/current')
+def set_current_user():
+    user_repo = UserRepository(get_db())
+
+    user_id = flask.request.json.get('userId')
+    if user_id is None:
+        flask.abort(400, "userId is required")
+
+    user = user_repo.load(user_id)
+    if user is None:
+        flask.abort(404)
+
+    # This needs to be a system user
+    flask_login.login_user(SystemUser(user.user_id, user.name, [], False))
+    logger.info(f"User logged in. id: {user.user_id}, name: {user.name}")
+
+    return _user_to_response(flask.request.host_url, user)
+
 
 @bp.get("/<user_id>/visits")
 def get_visits(user_id: int):
+    """ This endpoint returns a list of visits for the user.
+    """
     user_repo = UserRepository(get_db())
     visit_repo = VisitRepository(get_db())
 

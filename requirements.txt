@@ -1,6 +1,7 @@
 mysql-connector-python
 # Pillow
 flask
+flask-login
 
 # Data Analysis and Reporting
 # numpy
